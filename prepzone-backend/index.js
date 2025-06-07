@@ -2,13 +2,17 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+dotenv.config();
 
 const userRoutes = require("./routes/userRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const libraryRoutes = require("./routes/libraryRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
 
-dotenv.config();
+const paymentIntregation = require("./routes/paymentRoutes");
+
+
+
 connectDB();
 
 const app = express();
@@ -20,6 +24,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/libraries", libraryRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/payment", paymentIntregation);
 
 // Health check route
 app.get("/", (req, res) => {

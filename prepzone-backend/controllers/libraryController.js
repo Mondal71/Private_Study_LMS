@@ -83,13 +83,14 @@ exports.deleteLibrary = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized" });
     }
 
-    await library.remove();
+    await Library.findByIdAndDelete(libraryId); // ✅ FIXED
     res.json({ message: "Library deleted successfully" });
   } catch (error) {
     console.error("Delete Library Error:", error.message);
     res.status(500).json({ error: "Failed to delete library" });
   }
 };
+
 
 // 🔍 Public: Get all libraries
 exports.getAllLibraries = async (req, res) => {
