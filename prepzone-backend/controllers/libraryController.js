@@ -11,12 +11,12 @@ exports.createLibrary = async (req, res) => {
       name,
       location,
       totalSeats,
-      availableSeats,
+      availableSeats, 
       amenities: features,
     });
 
     await library.save();
-    res.status(201).json({ message: "Library created", library });
+    res.status(201).json({ message: "Library created", library }); 
   } catch (error) {
     console.error("Library Create Error:", error.message);
     res.status(500).json({ error: "Failed to create library" });

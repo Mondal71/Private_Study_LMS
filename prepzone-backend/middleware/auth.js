@@ -14,9 +14,9 @@ exports.verifyToken = async (req, res, next) => {
 
     let user;
     if (decoded.role === "admin") {
-      user = await Admin.findById(decoded.id);
+      user = await Admin.findById(decoded.id || decoded.adminId); // ✅ FIXED
     } else {
-      user = await User.findById(decoded.id);
+      user = await User.findById(decoded.id || decoded.userId); // ✅ FIXED
     }
 
     if (!user) {
