@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Signup from "./pages/Signup";
+import VerifyOTP from "./pages/VerifyOTP";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/signup" element={<Signup />} />
-        {/* More routes coming soon */}
+        <Route path="/verify" element={<VerifyOTP />} />
       </Routes>
     </Router>
   );
