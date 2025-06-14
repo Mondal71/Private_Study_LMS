@@ -8,35 +8,38 @@ const jwt = require("jsonwebtoken");
   exports.sendOTP = async (req, res) => {
     const { name, phone } = req.body;
 
+    if (!name || !phone) {
+      return res.status(400).json({ error: "Name and phone are required" });
+    }
+
     try {
-      if (!name || !phone) {
-        return res.status(400).json({ error: "Name and phone are required" });
-      }
+      const otp = generateOTP();
+      console.log("Generated OTP:", otp);
 
       let user = await User.findOne({ phone });
 
-      const otp = generateOTP();
-
       if (!user) {
-        user = new User({ name, phone, otp });
+        user = new User({ name, phone, otp, isVerified: false });
       } else {
-        user.otp = otp;
         user.name = name;
+        user.otp = otp;
+        user.isVerified = false;
       }
 
-      await user.save();
+      const savedUser = await user.save();
+      console.log("User saved with OTP:", savedUser);
 
-      console.log(`OTP for ${phone} is: ${otp}`);
-
-      res.status(200).json({ message: "OTP sent successfully" });
-    } catch (error) {
-      console.error("OTP Send Error:", error.message);
-      res.status(500).json({ error: "Failed to send OTP" });
+      return res.status(200).json({ message: "OTP sent successfully" });
+    } catch (err) {
+      console.error("OTP Send Error:", err.message);
+      return res.status(500).json({ error: "Failed to send OTP" });
     }
   };
-  
+
+  // Verify OTP
   exports.verifyOTP = async (req, res) => {
     const { phone, otp } = req.body;
+    console.log("Verifying OTP for:", phone, otp);
 
     if (!phone || !otp) {
       return res.status(400).json({ error: "Phone and OTP are required" });
@@ -45,7 +48,13 @@ const jwt = require("jsonwebtoken");
     try {
       const user = await User.findOne({ phone });
 
-      if (!user || user.otp !== otp) {
+      if (!user) {
+        console.log("User not found");
+        return res.status(400).json({ error: "User not found" });
+      }
+
+      console.log("OTP in DB:", user.otp);
+      if (!user.otp || user.otp.toString() !== otp.toString()) {
         return res.status(400).json({ error: "Invalid OTP" });
       }
 
@@ -53,11 +62,13 @@ const jwt = require("jsonwebtoken");
       user.otp = "";
       await user.save();
 
-      res.status(200).json({ message: "User verified successfully" });
+      return res.status(200).json({ message: "User verified successfully" });
     } catch (err) {
-      res.status(500).json({ error: "OTP verification failed" });
+      console.error("Verify OTP Error:", err.message);
+      return res.status(500).json({ error: "OTP verification failed" });
     }
-};
+  };
+  
   
 // Set password after OTP verification
 exports.setPassword = async (req, res) => {

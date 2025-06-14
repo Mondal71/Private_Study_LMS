@@ -6,7 +6,61 @@ const bcrypt = require("bcrypt");
 const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
-//set pass
+// =================== SEND OTP ===================
+exports.sendOTP = async (req, res) => {
+  const { name, phone } = req.body;
+
+  try {
+    let admin = await Admin.findOne({ phone });
+
+    const otp = generateOTP();
+
+    if (!admin) {
+      admin = new Admin({ name, phone, otp });
+    } else {
+      admin.otp = otp;
+      admin.name = name; // ✅ optional update
+    }
+
+    await admin.save();
+
+    console.log("📨 OTP for Admin", phone, "is:", otp);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to admin successfully",
+    });
+  } catch (error) {
+    console.error("OTP Send Error:", error);
+    res.status(500).json({ error: "Failed to send OTP" });
+  }
+};
+
+// =================== VERIFY OTP ===================
+exports.verifyOTP = async (req, res) => {
+  const { phone, otp } = req.body;
+
+  try {
+    const admin = await Admin.findOne({ phone });
+
+    if (!admin || admin.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    admin.isVerified = true;
+    admin.otp = "";
+    await admin.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Admin verified successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ error: "OTP verification failed" });
+  }
+};
+
+// =================== SET PASSWORD ===================
 exports.setPassword = async (req, res) => {
   const { phone, password } = req.body;
 
@@ -28,53 +82,8 @@ exports.setPassword = async (req, res) => {
     res.status(500).json({ error: "Failed to set password" });
   }
 };
-// Send OTP
-exports.sendOTP = async (req, res) => {
-  const { name, phone } = req.body;
 
-  try {
-    let admin = await Admin.findOne({ phone });
-
-    const otp = generateOTP();
-
-    if (!admin) {
-      admin = new Admin({ name, phone, otp });
-    } else {
-      admin.otp = otp;
-    }
-
-    await admin.save();
-
-    console.log("OTP for Admin", phone, "is:", otp);
-
-    res.status(200).json({ message: "OTP sent to admin successfully" });
-  } catch (error) {
-    console.error("OTP Send Error:", error);
-    res.status(500).json({ error: "Failed to send OTP" });
-  }
-};
-
-// Verify OTP
-exports.verifyOTP = async (req, res) => {
-  const { phone, otp } = req.body;
-
-  try {
-    const admin = await Admin.findOne({ phone });
-
-    if (!admin || admin.otp !== otp) {
-      return res.status(400).json({ error: "Invalid OTP" });
-    }
-
-    admin.isVerified = true;
-    admin.otp = "";
-    await admin.save();
-
-    res.status(200).json({ message: "Admin verified successfully" });
-  } catch (error) {
-    res.status(500).json({ error: "OTP verification failed" });
-  }
-};
-
+// =================== LOGIN ===================
 exports.login = async (req, res) => {
   const { phone, password } = req.body;
 
@@ -112,7 +121,6 @@ exports.login = async (req, res) => {
         role: "admin",
       },
     });
-    
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Login failed" });
