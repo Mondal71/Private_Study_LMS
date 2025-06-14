@@ -11,9 +11,11 @@ export default function AdminLogin() {
   const handleLogin = async () => {
     try {
       const res = await API.post("/admin/login", { phone, password });
+
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", "admin");
+        localStorage.setItem("adminName", res.data.user.name); // ✅ IMPORTANT LINE
         alert("Login successful!");
         navigate("/admin/dashboard");
       }
@@ -21,6 +23,7 @@ export default function AdminLogin() {
       alert(err.response?.data?.error || "Login failed");
     }
   };
+  
 
   return (
     <>

@@ -10,6 +10,10 @@ import AdminSignup from "./pages/admin/AdminSignup";
 import AdminVerifyOTP from "./pages/admin/AdminVerifyOTP";
 import AdminSetPassword from "./pages/admin/AdminSetPassword";
 import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AddLibraryForm from "./pages/admin/AddLibraryForm";
+import EditLibraryForm from "./pages/admin/EditLibraryForm";
+
 
 export default function App() {
   return (
@@ -26,6 +30,9 @@ export default function App() {
         <Route path="/admin/verify" element={<AdminVerifyOTP />} />
         <Route path="/admin/set-password" element={<AdminSetPassword />} />
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/add-library" element={<AddLibraryForm />} />
+        <Route path="/admin/edit-library/:id" element={<EditLibraryForm />} />
       </Routes>
     </Router>
   );

@@ -2,10 +2,13 @@ import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import RoleSelector from "../components/RoleSelector";
+import homeImage from "../photo/homephoto.jpg"; 
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(null);
+
+  const isLoggedIn = !!localStorage.getItem("token");
 
   return (
     <>
@@ -23,36 +26,40 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col-reverse md:flex-row items-center gap-10">
           {/* Left Content */}
           <div className="md:w-1/2 text-center md:text-left space-y-6 animate-fade-in">
-            <h2 className="text-xl text-indigo-500 font-semibold">
+            <h2 className="text-3xl text-indigo-500 font-semibold">
               Private Study System
             </h2>
-            <h1 className="text-4xl font-bold text-gray-800">
+            <h1 className="text-5xl font-bold text-gray-800">
               Find <span className="text-indigo-600">Peaceful Libraries</span>{" "}
               Near You
             </h1>
-            <p className="text-gray-600">
-              PrepZone helps you book seats in study libraries near your area.
-              Start now by choosing your role and action.
+            <p className="text-gray-600 text-lg">
+              PrepZone helps students find and book seats in peaceful, nearby
+              libraries. Say goodbye to distractions and focus better by
+              choosing your role and getting started with your ideal study space
+              today.
             </p>
 
-            {/* Login/Signup Buttons */}
-            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-              <button
-                onClick={() => setStep("login")}
-                className="btn-primary w-32 border border-indigo-600 text-indigo-600 bg-white hover:bg-indigo-500"
-              >
-                Login
-              </button>
-              <button
-                onClick={() => setStep("signup")}
-                className="btn-primary w-32 border border-indigo-600 text-indigo-600 bg-white hover:bg-indigo-500"
-              >
-                Sign Up
-              </button>
-            </div>
+            {/* ✅ Show Buttons only if not logged in */}
+            {!isLoggedIn && (
+              <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                <button
+                  onClick={() => setStep("login")}
+                  className="btn-primary w-32 border border-indigo-600 text-indigo-600 bg-white hover:bg-indigo-500"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => setStep("signup")}
+                  className="btn-primary w-32 border border-indigo-600 text-indigo-600 bg-white hover:bg-indigo-500"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
 
-            {/* Show RoleSelector inline just below buttons */}
-            {step && (
+            {/* Show RoleSelector only if step is set */}
+            {!isLoggedIn && step && (
               <div className="pt-6">
                 <RoleSelector action={step} />
               </div>
@@ -62,8 +69,8 @@ export default function HomePage() {
           {/* Right image */}
           <div className="md:w-1/2">
             <img
-              src="https://img.freepik.com/free-photo/portrait-happy-young-woman-holding-red-book_23-2148430867.jpg"
-              alt="study"
+              src={homeImage}
+              alt="study cartoon"
               className="w-full rounded-xl shadow-lg"
             />
           </div>
