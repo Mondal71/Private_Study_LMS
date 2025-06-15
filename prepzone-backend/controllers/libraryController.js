@@ -4,25 +4,24 @@ exports.createLibrary = async (req, res) => {
   const { name, location, totalSeats, availableSeats, features } = req.body;
 
   try {
-    const adminId = req.user._id; // ✅ token se adminId lo
+    const adminId = req.user._id;
 
     const library = new Library({
       adminId,
       name,
       location,
       totalSeats,
-      availableSeats, 
-      amenities: features,
+      availableSeats,
+      amenities: features, // ✅
     });
 
     await library.save();
-    res.status(201).json({ message: "Library created", library }); 
+    res.status(201).json({ message: "Library created", library });
   } catch (error) {
     console.error("Library Create Error:", error.message);
     res.status(500).json({ error: "Failed to create library" });
   }
 };
-
 
 // Get all libraries by current admin
 exports.getMyLibraries = async (req, res) => {

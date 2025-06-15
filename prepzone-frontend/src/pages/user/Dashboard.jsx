@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
+import noImage from "../../photo/default.jpg";
+
 
 export default function Dashboard() {
   const [libraries, setLibraries] = useState([]);
@@ -15,8 +17,7 @@ export default function Dashboard() {
       return;
     }
 
-    axios
-      .get("/api/libraries/all", {
+    axios.get("/api/libraries/all", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
@@ -30,11 +31,9 @@ export default function Dashboard() {
 
   const filteredLibraries = Array.isArray(libraries)
     ? libraries.filter((lib) =>
-        lib.area?.toLowerCase().includes(searchArea.toLowerCase())
+        lib.location?.toLowerCase().includes(searchArea.toLowerCase())
       )
     : [];
-
-  const placeholderImage = "https://via.placeholder.com/400x300?text=No+Image";
 
   return (
     <>
@@ -53,15 +52,18 @@ export default function Dashboard() {
               className="bg-white shadow-md rounded-lg overflow-hidden"
             >
               <img
-                src={library.image || placeholderImage}
+                src={library.image || noImage}
                 alt={library.name}
                 className="w-full h-48 object-cover"
               />
+
               <div className="p-4">
                 <h2 className="text-xl font-semibold mb-2 text-indigo-800">
                   {library.name}
                 </h2>
-                <p className="text-gray-600 mb-1">Area: {library.area}</p>
+                <p className="text-gray-600 mb-1">
+                  Location: {library.location}
+                </p>
                 <p className="text-gray-600 mb-1">
                   Total Seats: {library.totalSeats}
                 </p>

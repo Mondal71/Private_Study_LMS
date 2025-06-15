@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const librarySchema = new mongoose.Schema({
   adminId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // Admin from User model
+    ref: "Admin", 
     required: true,
   },
   name: {
