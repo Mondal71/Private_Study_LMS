@@ -11,6 +11,15 @@ const reservationSchema = new mongoose.Schema({
     ref: "Library",
     required: true,
   },
+  aadhar: {
+    type: String,
+  },
+  phoneNumber: {
+    type: String,
+  },
+  photo: {
+    type: String, // 📸 Save image path
+  },
   status: {
     type: String,
     enum: ["pending", "confirmed", "cancelled"],

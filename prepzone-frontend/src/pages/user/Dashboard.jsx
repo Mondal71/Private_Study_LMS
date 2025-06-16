@@ -70,7 +70,10 @@ export default function Dashboard() {
                 <p className="text-gray-600 mb-4">
                   Available: {library.availableSeats}
                 </p>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">
+                <button
+                  onClick={() => navigate(`/user/book/${library._id}`)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full"
+                >
                   Book Now
                 </button>
               </div>

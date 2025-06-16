@@ -20,6 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use("/uploads", express.static("uploads"));
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/libraries", libraryRoutes);

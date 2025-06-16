@@ -13,6 +13,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AddLibraryForm from "./pages/admin/AddLibraryForm";
 import EditLibraryForm from "./pages/admin/EditLibraryForm";
+import BookLibrary from "./pages/user/BookLibrary";
 
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/add-library" element={<AddLibraryForm />} />
         <Route path="/admin/edit-library/:id" element={<EditLibraryForm />} />
+        <Route path="/user/book/:id" element={<BookLibrary />} />
       </Routes>
     </Router>
   );

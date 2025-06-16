@@ -1,8 +1,11 @@
 const Reservation = require("../models/Reservation");
 const Library = require("../models/Library");
+const fs = require("fs");
+const path = require("path");
+
 
 exports.bookSeat = async (req, res) => {
-  const { libraryId, paymentMode } = req.body;
+  const { libraryId, paymentMode, aadhar, phoneNumber } = req.body;
 
   try {
     const library = await Library.findById(libraryId);
@@ -10,16 +13,26 @@ exports.bookSeat = async (req, res) => {
       return res.status(400).json({ error: "No seats available" });
     }
 
+    // ✅ Handle image upload
+    let photoPath = "";
+    if (req.file && req.file.buffer) {
+      const fileName = `${Date.now()}-${req.file.originalname}`;
+      const fullPath = path.join(__dirname, "..", "uploads", fileName);
+      fs.writeFileSync(fullPath, req.file.buffer);
+      photoPath = `/uploads/${fileName}`;
+    }
+
     const expiresAt =
-      paymentMode === "offline"
-        ? new Date(Date.now() + 60 * 60 * 1000) // 1 hour later
-        : null;
+      paymentMode === "offline" ? new Date(Date.now() + 60 * 60 * 1000) : null;
 
     const reservation = new Reservation({
       userId: req.user._id,
       libraryId,
+      aadhar,
+      phoneNumber,
+      photo: photoPath,
       paymentMode,
-      isPaid: paymentMode === "online", // default false for offline
+      isPaid: paymentMode === "online",
       status: paymentMode === "online" ? "confirmed" : "pending",
       expiresAt,
     });

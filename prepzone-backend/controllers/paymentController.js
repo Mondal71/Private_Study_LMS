@@ -17,17 +17,22 @@ exports.createOrder = async (req, res) => {
     };
 
     const order = await razorpay.orders.create(options);
-    res.json({ success: true, order });
+
+    // ✅ Send key to frontend
+    res.json({
+      success: true,
+      order,
+      key: process.env.RAZORPAY_KEY_ID,
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Order creation failed",
-        error: err.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Order creation failed",
+      error: err.message,
+    });
   }
 };
+
 
 exports.verifyPayment = async (req, res) => {
   const {
