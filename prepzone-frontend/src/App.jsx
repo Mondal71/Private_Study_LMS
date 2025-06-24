@@ -14,6 +14,9 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AddLibraryForm from "./pages/admin/AddLibraryForm";
 import EditLibraryForm from "./pages/admin/EditLibraryForm";
 import BookLibrary from "./pages/user/BookLibrary";
+import MyBookings from "./pages/user/MyBookings";
+import LibraryReservations from "./pages/admin/LibraryReservations";
+
 
 
 export default function App() {
@@ -35,6 +38,11 @@ export default function App() {
         <Route path="/admin/add-library" element={<AddLibraryForm />} />
         <Route path="/admin/edit-library/:id" element={<EditLibraryForm />} />
         <Route path="/user/book/:id" element={<BookLibrary />} />
+        <Route path="/user/my-bookings" element={<MyBookings />} />
+        <Route
+          path="/admin/library/:libraryId/reservations"
+          element={<LibraryReservations />}
+        />
       </Routes>
     </Router>
   );

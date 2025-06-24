@@ -33,7 +33,7 @@ exports.bookSeat = async (req, res) => {
       photo: photoPath,
       paymentMode,
       isPaid: paymentMode === "online",
-      status: paymentMode === "online" ? "confirmed" : "pending",
+      status: "pending",
       expiresAt,
     });
 
@@ -82,11 +82,17 @@ exports.cancelReservation = async (req, res) => {
       return res.status(400).json({ error: "Reservation already cancelled" });
     }
 
-    // Update reservation
+    // ✅ Update reservation
     reservation.status = "cancelled";
+
+    // ✅ IF not confirmed yet, set custom message
+    if (reservation.status !== "confirmed") {
+      reservation.message = "Admission cancelled by user";
+    }
+
     await reservation.save();
 
-    // Update library seats only if it was confirmed
+    // ✅ Refund seat only if it was already confirmed
     if (reservation.status === "confirmed") {
       const library = await Library.findById(reservation.libraryId);
       library.availableSeats += 1;
@@ -99,6 +105,7 @@ exports.cancelReservation = async (req, res) => {
     res.status(500).json({ error: "Failed to cancel reservation" });
   }
 };
+
 
 exports.autoCancelUnpaidReservations = async () => {
   try {
@@ -131,3 +138,78 @@ exports.autoCancelUnpaidReservations = async () => {
     console.error("Auto-cancel error:", error.message);
   }
 };
+
+// Get all reservations for libraries owned by current admin
+exports.getReservationsForAdmin = async (req, res) => {
+  try {
+    const adminId = req.user._id;
+
+    // Get all libraries owned by this admin
+    const libraries = await Library.find({ adminId });
+    const libraryIds = libraries.map((lib) => lib._id);
+
+    const reservations = await Reservation.find({ libraryId: { $in: libraryIds } })
+      .populate("libraryId", "name")
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ reservations });
+  } catch (err) {
+    console.error("Admin Reservations Error:", err.message);
+    res.status(500).json({ error: "Failed to fetch reservations" });
+  }
+};
+
+// Accept or Reject a reservation
+exports.handleReservationDecision = async (req, res) => {
+  const { id } = req.params;
+  const { decision } = req.body;
+
+  try {
+    const reservation = await Reservation.findById(id).populate("libraryId");
+    if (!reservation) {
+      return res.status(404).json({ error: "Reservation not found" });
+    }
+
+    const library = reservation.libraryId;
+
+    if (library.adminId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    if (decision === "accept") {
+      if (library.availableSeats > 0) {
+        reservation.status = "confirmed";
+        reservation.isPaid = true;
+        reservation.message = "Admission done successfully"; // ✅ FIXED
+        await reservation.save();
+
+        library.availableSeats -= 1;
+        await library.save();
+
+        return res.json({ message: "Reservation accepted" });
+      } else {
+        reservation.status = "cancelled";
+        reservation.message = "No seats available. Payment refunded."; // ✅ FIXED
+        await reservation.save();
+
+        return res
+          .status(400)
+          .json({ error: "No seats available, reservation cancelled" });
+      }
+    } else if (decision === "reject") {
+      reservation.status = "cancelled";
+      reservation.message = "Reservation rejected. Payment refunded."; // ✅ FIXED
+      await reservation.save();
+
+      return res.json({ message: "Reservation rejected" });
+    } else {
+      return res.status(400).json({ error: "Invalid decision" });
+    }
+  } catch (err) {
+    console.error("Decision Error:", err.message);
+    res.status(500).json({ error: "Failed to update reservation" });
+  }
+};
+
+

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import noImage from "../../photo/default.jpg";
 
-
 export default function Dashboard() {
   const [libraries, setLibraries] = useState([]);
   const [searchArea, setSearchArea] = useState("");
@@ -17,12 +16,12 @@ export default function Dashboard() {
       return;
     }
 
-    axios.get("/api/libraries/all", {
+    axios
+      .get("/api/libraries/all", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
-        console.log("📦 API Response:", response.data);
-        setLibraries(response.data.libraries); // ✅ only array
+        setLibraries(response.data.libraries);
       })
       .catch((error) => {
         console.error("Error fetching libraries:", error.message);
@@ -38,17 +37,15 @@ export default function Dashboard() {
   return (
     <>
       <Navbar onSearch={(text) => setSearchArea(text)} />
-
       <div className="container mx-auto p-4 min-h-screen">
         <h1 className="text-2xl font-bold mb-6 text-indigo-700 text-center">
           Available Libraries
         </h1>
 
-        {/* Library Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredLibraries.map((library, index) => (
+          {filteredLibraries.map((library) => (
             <div
-              key={library._id || index}
+              key={library._id}
               className="bg-white shadow-md rounded-lg overflow-hidden"
             >
               <img
@@ -56,7 +53,6 @@ export default function Dashboard() {
                 alt={library.name}
                 className="w-full h-48 object-cover"
               />
-
               <div className="p-4">
                 <h2 className="text-xl font-semibold mb-2 text-indigo-800">
                   {library.name}

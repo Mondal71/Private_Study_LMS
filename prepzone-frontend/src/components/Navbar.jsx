@@ -11,7 +11,6 @@ export default function Navbar({ onSearch }) {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <img
             src="https://img.icons8.com/color/48/000000/books.png"
@@ -21,7 +20,6 @@ export default function Navbar({ onSearch }) {
           <h1 className="text-2xl font-bold text-indigo-700">PrepZone</h1>
         </Link>
 
-        {/* Search box (only for user dashboard) */}
         {showSearch && (
           <input
             type="text"
@@ -31,7 +29,6 @@ export default function Navbar({ onSearch }) {
           />
         )}
 
-        {/* Navigation Links */}
         <nav className="space-x-4">
           <Link
             to="/"
@@ -46,14 +43,21 @@ export default function Navbar({ onSearch }) {
             About
           </Link>
 
-          {/* Conditional Dashboards */}
           {isLoggedIn && role === "user" && (
-            <Link
-              to="/user/dashboard"
-              className="text-gray-700 hover:text-indigo-600 font-medium"
-            >
-              Dashboard
-            </Link>
+            <>
+              <Link
+                to="/user/dashboard"
+                className="text-gray-700 hover:text-indigo-600 font-medium"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/user/my-bookings"
+                className="text-gray-700 hover:text-indigo-600 font-medium"
+              >
+                My Bookings
+              </Link>
+            </>
           )}
 
           {isLoggedIn && role === "admin" && (
@@ -65,7 +69,6 @@ export default function Navbar({ onSearch }) {
             </Link>
           )}
 
-          {/* Login/Logout */}
           {!isLoggedIn ? (
             <Link
               to="/user/login"

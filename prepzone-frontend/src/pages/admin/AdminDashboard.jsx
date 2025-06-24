@@ -1,3 +1,4 @@
+// ✅ Final AdminDashboard.jsx (Updated with View Reservations Button)
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
@@ -18,13 +19,9 @@ export default function AdminDashboard() {
       return;
     }
 
-    if (name) {
-      setAdminName(name);
-    }
-
+    if (name) setAdminName(name);
     fetchMyLibraries(token);
   }, []);
-  
 
   const fetchMyLibraries = async (token) => {
     try {
@@ -38,27 +35,22 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this library?"
-    );
-    if (!confirmDelete) return;
-
+    if (!window.confirm("Are you sure you want to delete this library?"))
+      return;
     try {
       const token = localStorage.getItem("token");
       await API.delete(`/libraries/admin/library/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("Library deleted successfully");
-      fetchMyLibraries(token); // refresh list
+      fetchMyLibraries(token);
     } catch (err) {
       alert(err.response?.data?.error || "Failed to delete");
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("adminName");
+    localStorage.clear();
     navigate("/admin/login");
   };
 
@@ -82,45 +74,47 @@ export default function AdminDashboard() {
 
           <h1 className="text-4xl font-semibold m-3">📚 Your Libraries</h1>
 
-          {libraries.length === 0 ? (
-            <p className="text-gray-500">No libraries added yet.</p>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              {libraries.map((lib) => (
-                <div
-                  key={lib._id}
-                  className="bg-white shadow-md p-4 rounded-lg space-y-2"
-                >
-                  <h3 className="text-lg font-bold text-indigo-700">
-                    {lib.name}
-                  </h3>
-                  <p className="text-gray-600">Location: {lib.location}</p>
-                  <p className="text-gray-600">Total Seats: {lib.totalSeats}</p>
-                  <p className="text-gray-600">
-                    Available: {lib.availableSeats}
-                  </p>
-                  <p className="text-sm text-gray-500 italic">
-                    Amenities: {lib.amenities.join(", ")}
-                  </p>
+          <div className="grid md:grid-cols-2 gap-6">
+            {libraries.map((lib) => (
+              <div
+                key={lib._id}
+                className="bg-white shadow-md p-4 rounded-lg space-y-2"
+              >
+                <h3 className="text-lg font-bold text-indigo-700">
+                  {lib.name}
+                </h3>
+                <p className="text-gray-600">Location: {lib.location}</p>
+                <p className="text-gray-600">Total Seats: {lib.totalSeats}</p>
+                <p className="text-gray-600">Available: {lib.availableSeats}</p>
+                <p className="text-sm text-gray-500 italic">
+                  Amenities: {lib.amenities.join(", ")}
+                </p>
 
-                  <div className="flex gap-3 mt-3">
-                    <button
-                      onClick={() => navigate(`/admin/edit-library/${lib._id}`)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(lib._id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                    >
-                      ❌ Delete
-                    </button>
-                  </div>
+                <div className="flex gap-3 mt-3">
+                  <button
+                    onClick={() => navigate(`/admin/edit-library/${lib._id}`)}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(lib._id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    ❌ Delete
+                  </button>
+                  <button
+                    onClick={() =>
+                      navigate(`/admin/library/${lib._id}/reservations`)
+                    }
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                  >
+                    📄 View Reservations
+                  </button>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
 
           <button
             className="mt-10 w-full btn-primary bg-red-600 hover:bg-red-700"
@@ -133,3 +127,6 @@ export default function AdminDashboard() {
     </>
   );
 }
+
+// ✅ Add this route in App.jsx or AdminRoutes.jsx
+// <Route path="/admin/library/:libraryId/reservations" element={<LibraryReservations />} />
