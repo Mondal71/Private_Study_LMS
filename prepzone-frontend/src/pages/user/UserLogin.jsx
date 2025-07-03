@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import Navbar from "../../components/Navbar";
+import { Link } from "react-router-dom";
 
 export default function UserLogin() {
   const [email, setEmail] = useState(""); // ✅ changed from phone to email
@@ -14,7 +15,7 @@ export default function UserLogin() {
     }
 
     try {
-      const res = await API.post("/users/login", { email, password }); // ✅ use email
+      const res = await API.post("/user/login", { email, password }); //  use email
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
@@ -49,9 +50,12 @@ export default function UserLogin() {
             onChange={(e) => setPassword(e.target.value)}
             className="input w-full mb-6"
           />
-          <button className="btn-primary w-full" onClick={handleLogin}>
+          <button className="btn-primary w-full mb-2" onClick={handleLogin}>
             Login
           </button>
+          <Link to="/user/forgot" className="text-blue-500 text-base mt-2">
+            Forgot Password?
+          </Link>
         </div>
       </div>
     </>

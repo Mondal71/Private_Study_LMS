@@ -167,3 +167,75 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 };
+
+// =================== FORGOT PASSWORD - Send OTP ===================
+exports.sendForgotOTP = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ error: "Admin not found" });
+    }
+
+    const otp = generateOTP();
+    admin.otp = otp;
+    admin.otpCreatedAt = Date.now();
+    await admin.save();
+
+    await sendEmailOTP(email, otp);
+
+    res.status(200).json({ message: "OTP sent to email" });
+  } catch (error) {
+    console.error("Forgot Password - Send OTP Error:", error.message);
+    res.status(500).json({ error: "Failed to send OTP" });
+  }
+};
+
+// =================== FORGOT PASSWORD - Verify OTP ===================
+exports.verifyForgotOTP = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin || admin.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    const isExpired =
+      Date.now() - new Date(admin.otpCreatedAt).getTime() > 5 * 60 * 1000;
+    if (isExpired) {
+      return res.status(400).json({ error: "OTP expired. Try again." });
+    }
+
+    admin.otp = "";
+    await admin.save();
+
+    res.status(200).json({ message: "OTP verified. You can now reset password." });
+  } catch (error) {
+    console.error("Forgot Password - Verify OTP Error:", error.message);
+    res.status(500).json({ error: "OTP verification failed" });
+  }
+};
+
+// =================== FORGOT PASSWORD - Reset Password ===================
+exports.resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ error: "Admin not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    admin.password = hashedPassword;
+    await admin.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("Reset Password Error:", error.message);
+    res.status(500).json({ error: "Failed to reset password" });
+  }
+};
+

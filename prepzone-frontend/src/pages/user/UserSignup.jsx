@@ -14,7 +14,7 @@ export default function UserSignup() {
     }
 
     try {
-      const res = await API.post("/users/signup", { name, email }); // ✅ use email
+      const res = await API.post("/user/signup", { name, email }); // ✅ use email
       if (res.data.message === "OTP sent to email successfully") {
         localStorage.setItem("tempUserEmail", email); // ✅ store email instead of phone
         navigate("/user/verify");

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import Navbar from "../../components/Navbar";
+import { Link } from "react-router-dom";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState(""); // ✅ CHANGED
@@ -46,9 +47,12 @@ export default function AdminLogin() {
             onChange={(e) => setPassword(e.target.value)}
             className="input w-full mb-6"
           />
-          <button className="btn-primary w-full" onClick={handleLogin}>
+          <button className="btn-primary w-full mb-2" onClick={handleLogin}>
             Login
           </button>
+          <Link to="/admin/forgot" className="text-blue-500 text-base mt-2">
+            Forgot Password?
+          </Link>
         </div>
       </div>
     </>

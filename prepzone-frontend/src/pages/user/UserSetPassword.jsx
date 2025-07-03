@@ -27,7 +27,7 @@ export default function UserSetPassword() {
     }
 
     try {
-      const res = await API.post("/users/set-password", { email, password }); // ✅ send email instead of phone
+      const res = await API.post("/user/set-password", { email, password }); // ✅ send email instead of phone
       if (
         res.data.success ||
         res.data.message === "Password set successfully"

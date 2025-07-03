@@ -14,7 +14,7 @@ export default function UserVerifyOTP() {
 
   const handleVerify = async () => {
     try {
-      const res = await API.post("/users/verify", { email, otp }); // ✅ changed from phone
+      const res = await API.post("/user/verify", { email, otp }); // ✅ changed from phone
       console.log("Response:", res.data);
       if (res.data.message === "User verified successfully") {
         navigate("/user/set-password");

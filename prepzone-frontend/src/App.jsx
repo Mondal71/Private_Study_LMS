@@ -16,6 +16,9 @@ import EditLibraryForm from "./pages/admin/EditLibraryForm";
 import BookLibrary from "./pages/user/BookLibrary";
 import MyBookings from "./pages/user/MyBookings";
 import LibraryReservations from "./pages/admin/LibraryReservations";
+import ForgotPassword from "./components/ForgotPassword";
+import VerifyForgotOTP from "./components/VerifyForgotOTP";
+import SetNewPassword from "./components/SetNewPassword";
 
 
 
@@ -43,6 +46,9 @@ export default function App() {
           path="/admin/library/:libraryId/reservations"
           element={<LibraryReservations />}
         />
+        <Route path="/:role/forgot" element={<ForgotPassword />} />
+        <Route path="/:role/forgot/verify" element={<VerifyForgotOTP />} />
+        <Route path="/:role/forgot/new-password" element={<SetNewPassword />} />
       </Routes>
     </Router>
   );

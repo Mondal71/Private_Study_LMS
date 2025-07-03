@@ -43,8 +43,8 @@ exports.sendOTP = async (req, res) => {
       user = new User({ name, email, otp, isVerified: false });
     } else {
       user.name = name;
-      admin.otp = otp;
-      admin.otpCreatedAt = Date.now();
+      user.otp = otp;
+      user.otpCreatedAt = Date.now();
       user.isVerified = false;
     }
 
@@ -148,3 +148,65 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 };
+
+// Step 1: Send OTP for forgot password
+exports.sendForgotOTP = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const otp = generateOTP();
+    user.otp = otp;
+    user.otpCreatedAt = Date.now();
+    await user.save();
+
+    await sendEmailOTP(email, otp); //  already defined
+    res.json({ message: "OTP sent to email" });
+  } catch (err) {
+    console.error("Send Forgot OTP Error:", err.message);
+    res.status(500).json({ error: "Failed to send OTP" });
+  }
+};
+
+// Step 2: Verify OTP
+exports.verifyForgotOTP = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user || user.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    const isExpired = Date.now() - new Date(user.otpCreatedAt).getTime() > 5 * 60 * 1000;
+    if (isExpired) return res.status(400).json({ error: "OTP expired" });
+
+    user.isVerified = true; // ✅ optional
+    user.otp = "";
+    await user.save();
+    res.json({ message: "OTP verified successfully" });
+  } catch (err) {
+    console.error("Verify Forgot OTP Error:", err.message);
+    res.status(500).json({ error: "OTP verification failed" });
+  }
+};
+
+// Step 3: Reset Password
+exports.resetPassword = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const hashed = await bcrypt.hash(password, 10);
+    user.password = hashed;
+    await user.save();
+
+    res.json({ message: "Password reset successfully" });
+  } catch (err) {
+    console.error("Reset Password Error:", err.message);
+    res.status(500).json({ error: "Password reset failed" });
+  }
+};
+
+
