@@ -1,24 +1,14 @@
 const Reservation = require("../models/Reservation");
 const Library = require("../models/Library");
-const fs = require("fs");
-const path = require("path");
-
 
 exports.bookSeat = async (req, res) => {
-  const { libraryId, paymentMode, aadhar, phoneNumber } = req.body;
+  const { aadhar, email, phoneNumber, paymentMode } = req.body;
+  const libraryId = req.params.id;
 
   try {
     const library = await Library.findById(libraryId);
     if (!library || library.availableSeats < 1) {
       return res.status(400).json({ error: "No seats available" });
-    }
-
-    let photoPath = "";
-    if (req.file && req.file.buffer) {
-      const fileName = `${Date.now()}-${req.file.originalname}`;
-      const fullPath = path.join(__dirname, "..", "uploads", fileName);
-      fs.writeFileSync(fullPath, req.file.buffer);
-      photoPath = `/uploads/${fileName}`;
     }
 
     const expiresAt =
@@ -28,24 +18,24 @@ exports.bookSeat = async (req, res) => {
       userId: req.user._id,
       libraryId,
       aadhar,
+      email,
       phoneNumber,
-      photo: photoPath,
       paymentMode,
-      isPaid: false, // 👈 not paid until admin accepts
+      isPaid: false,
       status: "pending",
       expiresAt,
     });
 
     await reservation.save();
 
-    // ❌ NO seat decrement here — admin decision will decide
-    res.status(201).json({ message: "Seat reserved", reservation });
+    res
+      .status(201)
+      .json({ success: true, message: "Seat reserved", reservation });
   } catch (error) {
     console.error("Book Seat Error:", error.message);
     res.status(500).json({ error: "Failed to book seat" });
   }
 };
-
 
 exports.getMyReservations = async (req, res) => {
   try {
@@ -78,21 +68,20 @@ exports.cancelReservation = async (req, res) => {
       return res.status(400).json({ error: "Reservation already cancelled" });
     }
 
-    // ✅ Update reservation
+    // ✅ Check if confirmed BEFORE marking cancelled
+    const wasConfirmed = reservation.status === "confirmed";
+
     reservation.status = "cancelled";
-
-    // ✅ IF not confirmed yet, set custom message
-    if (reservation.status !== "confirmed") {
-      reservation.message = "Admission cancelled by user";
-    }
-
+    reservation.message = "Admission cancelled by user";
     await reservation.save();
 
-    // ✅ Refund seat only if it was already confirmed
-    if (reservation.status === "confirmed") {
+    // ✅ Only refund seat if it was confirmed
+    if (wasConfirmed) {
       const library = await Library.findById(reservation.libraryId);
-      library.availableSeats += 1;
-      await library.save();
+      if (library) {
+        library.availableSeats += 1;
+        await library.save();
+      }
     }
 
     res.json({ message: "Reservation cancelled successfully" });
@@ -144,7 +133,9 @@ exports.getReservationsForAdmin = async (req, res) => {
     const libraries = await Library.find({ adminId });
     const libraryIds = libraries.map((lib) => lib._id);
 
-    const reservations = await Reservation.find({ libraryId: { $in: libraryIds } })
+    const reservations = await Reservation.find({
+      libraryId: { $in: libraryIds },
+    })
       .populate("libraryId", "name")
       .populate("userId", "name email")
       .sort({ createdAt: -1 });
@@ -214,6 +205,3 @@ exports.handleReservationDecision = async (req, res) => {
     res.status(500).json({ error: "Failed to update reservation" });
   }
 };
-
-
-

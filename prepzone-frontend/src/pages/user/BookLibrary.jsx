@@ -1,62 +1,39 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import API from "../../services/api";
 import Navbar from "../../components/Navbar";
 
 export default function BookLibrary() {
-  const { libraryId } = useParams();
+  const [aadhar, setAadhar] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [paymentMode, setPaymentMode] = useState("online");
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [form, setForm] = useState({
-    aadhar: "",
-    phone: "",
-    paymentMode: "online",
-    photo: null,
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    setForm((prev) => ({ ...prev, photo: e.target.files[0] }));
-  };
-
-  const handleSubmit = async () => {
-    if (!form.aadhar || !form.phone || !form.photo) {
-      alert("Please fill all required fields and upload a photo.");
+  const handleBook = async () => {
+    if (aadhar.length !== 12) {
+      alert("Aadhar number must be 12 digits");
       return;
     }
-
-    if (!/^\d{12}$/.test(form.aadhar)) {
-      alert("Aadhar number must be 12 digits.");
-      return;
-    }
-
-    if (!/^\d{10}$/.test(form.phone)) {
-      alert("Phone number must be 10 digits.");
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    const formData = new FormData();
-    formData.append("libraryId", libraryId);
-    formData.append("paymentMode", form.paymentMode);
-    formData.append("aadhar", form.aadhar);
-    formData.append("phoneNumber", form.phone);
-    formData.append("photo", form.photo);
 
     try {
-      await API.post("/reservations/book", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await API.post(
+        `/reservations/book/${id}`,
+        { aadhar, email, phoneNumber: phone, paymentMode },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-      alert("Booking submitted! You can check status in My Bookings.");
-      navigate("/user/my-bookings");
+      if (res.data.success) {
+        alert("Booking successful!");
+        navigate("/user/my-bookings");
+      } else {
+        alert(res.data.error || "Booking failed");
+      }
     } catch (err) {
       alert(err.response?.data?.error || "Booking failed");
     }
@@ -65,50 +42,56 @@ export default function BookLibrary() {
   return (
     <>
       <Navbar />
-      <div className="min-h-[85vh] flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-          <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">
+      <div className="min-h-screen flex justify-center items-center bg-gray-50 px-4 py-8">
+        <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-lg">
+          <h2 className="text-2xl font-bold text-indigo-700 text-center mb-6">
             Book Your Seat
           </h2>
 
           <input
             type="text"
-            name="aadhar"
             placeholder="Aadhar Number"
-            value={form.aadhar}
-            onChange={handleChange}
+            value={aadhar}
+            onChange={(e) => setAadhar(e.target.value)}
             className="input w-full mb-4"
-            maxLength={12}
           />
-
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input w-full mb-4"
+          />
           <input
             type="tel"
-            name="phone"
             placeholder="Phone Number"
-            value={form.phone}
-            onChange={handleChange}
-            className="input w-full mb-4"
-            maxLength={10}
-          />
-
-          <select
-            name="paymentMode"
-            value={form.paymentMode}
-            onChange={handleChange}
-            className="input w-full mb-4"
-          >
-            <option value="online">Online</option>
-            <option value="offline">Offline</option>
-          </select>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             className="input w-full mb-6"
           />
 
-          <button className="btn-primary w-full" onClick={handleSubmit}>
+          <div className="mb-6">
+            <label className="block font-medium text-gray-700 mb-2">
+              Payment Mode
+            </label>
+            <select
+              value={paymentMode}
+              onChange={(e) => setPaymentMode(e.target.value)}
+              className="input w-full"
+            >
+              <option value="online">Online</option>
+              <option value="offline">Offline</option>
+            </select>
+          </div>
+
+          <div className="bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg text-sm mb-6">
+            <strong>Note:</strong> Please bring your original{" "}
+            <strong>Aadhar card</strong>, a <strong>photo copy</strong>, and a{" "}
+            <strong>passport-size photo</strong> with you when visiting the
+            library.
+          </div>
+
+          <button onClick={handleBook} className="btn-primary w-full">
             Book Now
           </button>
         </div>

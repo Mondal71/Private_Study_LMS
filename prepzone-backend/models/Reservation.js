@@ -1,50 +1,51 @@
-  const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 
-  const reservationSchema = new mongoose.Schema({
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    libraryId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Library",
-      required: true,
-    },
-    aadhar: {
-      type: String,
-    },
-    phoneNumber: {
-      type: String,
-    },
-    photo: {
-      type: String, // 📸 Save image path
-    },
-    status: {
-      type: String,
-      enum: ["pending", "confirmed", "cancelled"],
-      default: "pending",
-    },
-    paymentMode: {
-      type: String,
-      enum: ["online", "offline"],
-      required: true,
-    },
-    isPaid: {
-      type: Boolean,
-      default: false,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    expiresAt: {
-      type: Date,
-    },
-    message: {
-      type: String,
-      default: "",
-    },
-  });
+const reservationSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  libraryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Library",
+    required: true,
+  },
+  aadhar: {
+    type: String,
+  },
+  phoneNumber: {
+    type: String,
+  },
+  email: {
+    type: String,
+    required: false,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "confirmed", "cancelled"],
+    default: "pending",
+  },
+  paymentMode: {
+    type: String,
+    enum: ["online", "offline"],
+    required: true,
+  },
+  isPaid: {
+    type: Boolean,
+    default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  expiresAt: {
+    type: Date,
+  },
+  message: {
+    type: String,
+    default: "",
+  },
+});
 
-  module.exports = mongoose.model("Reservation", reservationSchema);
+module.exports = mongoose.model("Reservation", reservationSchema);
