@@ -28,11 +28,9 @@ export default function Dashboard() {
       });
   }, [navigate]);
 
-  const filteredLibraries = Array.isArray(libraries)
-    ? libraries.filter((lib) =>
-        lib.location?.toLowerCase().includes(searchArea.toLowerCase())
-      )
-    : [];
+  const filteredLibraries = libraries.filter((lib) =>
+    lib.location?.toLowerCase().includes(searchArea.toLowerCase())
+  );
 
   return (
     <>
@@ -57,14 +55,26 @@ export default function Dashboard() {
                 <h2 className="text-xl font-semibold mb-2 text-indigo-800">
                   {library.name}
                 </h2>
-                <p className="text-gray-600 mb-1">
-                  Location: {library.location}
+                <p className="text-gray-600 text-sm mb-1">
+                  <strong>Location:</strong> {library.location}
                 </p>
-                <p className="text-gray-600 mb-1">
-                  Total Seats: {library.totalSeats}
+                <p className="text-gray-600 text-sm mb-1">
+                  <strong>Total Seats:</strong> {library.totalSeats}
                 </p>
-                <p className="text-gray-600 mb-4">
-                  Available: {library.availableSeats}
+                <p className="text-gray-600 text-sm mb-1">
+                  <strong>Available:</strong> {library.availableSeats}
+                </p>
+                <p className="text-gray-600 text-sm mb-1">
+                  <strong>Phone:</strong> {library.phoneNumber || "N/A"}
+                </p>
+                <p className="text-gray-600 text-sm mb-1">
+                  <strong>Address:</strong> {library.address || "N/A"}
+                </p>
+                <p className="text-gray-600 text-sm mb-3">
+                  <strong>Amenities:</strong>{" "}
+                  {Array.isArray(library.amenities)
+                    ? library.amenities.join(", ")
+                    : "N/A"}
                 </p>
                 <button
                   onClick={() => navigate(`/user/book/${library._id}`)}

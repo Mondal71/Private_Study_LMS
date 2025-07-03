@@ -5,14 +5,17 @@ import Navbar from "../../components/Navbar";
 
 export default function AdminSignup() {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState(""); // ✅ CHANGED
   const navigate = useNavigate();
 
   const handleSignup = async () => {
     try {
-      const res = await API.post("/admin/signup", { name, phone });
-      if (res.data.success || res.data.message === "OTP sent successfully") {
-        localStorage.setItem("tempAdminPhone", phone);
+      const res = await API.post("/admin/signup", { name, email }); // ✅ CHANGED
+      if (
+        res.data.success ||
+        res.data.message === "OTP sent to email successfully"
+      ) {
+        localStorage.setItem("tempAdminEmail", email); // ✅ CHANGED
         navigate("/admin/verify");
       }
     } catch (err) {
@@ -36,10 +39,10 @@ export default function AdminSignup() {
             className="input w-full mb-4"
           />
           <input
-            type="tel"
-            placeholder="Phone Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            type="email"
+            placeholder="Email Address" // ✅ CHANGED
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="input w-full mb-6"
           />
           <button className="btn-primary w-full" onClick={handleSignup}>

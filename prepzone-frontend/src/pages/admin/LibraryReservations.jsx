@@ -1,4 +1,3 @@
-// ✅ pages/admin/LibraryReservations.jsx
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API from "../../services/api";
@@ -7,6 +6,7 @@ import Navbar from "../../components/Navbar";
 export default function LibraryReservations() {
   const { libraryId } = useParams();
   const [reservations, setReservations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,13 +17,15 @@ export default function LibraryReservations() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const filtered = res.data.reservations.filter(
-          (r) => r.libraryId._id === libraryId
+        const filtered = res?.data?.reservations?.filter(
+          (r) => r?.libraryId?._id === libraryId
         );
 
-        setReservations(filtered);
+        setReservations(filtered || []);
       } catch (err) {
         alert("Failed to fetch reservations");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -63,12 +65,14 @@ export default function LibraryReservations() {
   return (
     <>
       <Navbar />
-      <div className="p-6 max-w-5xl mx-auto">
+      <div className="p-6 max-w-5xl mx-auto min-h-[90vh]">
         <h2 className="text-2xl font-bold text-indigo-700 mb-4">
           📋 Reservations for This Library
         </h2>
 
-        {reservations.length === 0 ? (
+        {loading ? (
+          <p>Loading reservations...</p>
+        ) : reservations.length === 0 ? (
           <p>No reservations for this library.</p>
         ) : (
           reservations.map((res) => (
@@ -77,16 +81,17 @@ export default function LibraryReservations() {
               className="border p-4 mb-4 rounded bg-white shadow"
             >
               <p>
-                <strong>User Name:</strong> {res.userId?.name}
+                <strong>User Name:</strong> {res?.userId?.name || "Unknown"}
               </p>
               <p>
-                <strong>Aadhar:</strong> {res.aadhar}
+                <strong>Aadhar:</strong> {res.aadhar || "--"}
               </p>
               <p>
-                <strong>Phone:</strong> {res.phoneNumber}
+                <strong>Phone:</strong> {res.phoneNumber || "--"}
               </p>
               <p>
-                <strong>Payment Mode:</strong> {res.paymentMode}
+                <strong>Payment Mode:</strong>{" "}
+                {res.paymentMode?.toUpperCase() || "--"}
               </p>
               <p>
                 <strong>Status:</strong>{" "}
@@ -99,18 +104,20 @@ export default function LibraryReservations() {
                       : "text-red-600"
                   } font-semibold`}
                 >
-                  {res.status}
+                  {res.status?.toUpperCase()}
                 </span>
               </p>
               <p>
                 <strong>Message:</strong> {res.message || "--"}
               </p>
-              {res.photo && (
+              {res.photo ? (
                 <img
                   src={`http://localhost:5000${res.photo}`}
                   alt="User"
-                  className="w-32 h-32 mt-2 border rounded"
+                  className="w-32 h-32 mt-2 border rounded object-cover"
                 />
+              ) : (
+                <p className="text-sm text-gray-500 mt-2">No photo uploaded</p>
               )}
               {res.status === "pending" &&
                 res.message !== "Admission cancelled by user" && (

@@ -7,11 +7,11 @@ export default function UserSetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const navigate = useNavigate();
-  const phone = localStorage.getItem("tempPhone");
+  const email = localStorage.getItem("tempUserEmail"); // ✅ use email instead of phone
 
   const handleSetPassword = async () => {
-    if (!phone) {
-      alert("Phone number not found in session. Please signup again.");
+    if (!email) {
+      alert("Email not found in session. Please signup again.");
       navigate("/user/signup");
       return;
     }
@@ -20,18 +20,19 @@ export default function UserSetPassword() {
       alert("Password must be at least 6 characters");
       return;
     }
+
     if (password !== confirm) {
       alert("Passwords do not match");
       return;
     }
 
     try {
-      const res = await API.post("/users/set-password", { phone, password });
+      const res = await API.post("/users/set-password", { email, password }); // ✅ send email instead of phone
       if (
         res.data.success ||
         res.data.message === "Password set successfully"
       ) {
-        localStorage.removeItem("tempPhone");
+        localStorage.removeItem("tempUserEmail"); // ✅ cleanup email key
         alert("Password set successfully! You can now login.");
         navigate("/user/login");
       }
@@ -62,7 +63,7 @@ export default function UserSetPassword() {
             onChange={(e) => setConfirm(e.target.value)}
             className="input w-full mb-6"
           />
-          <button className="btn-primary" onClick={handleSetPassword}>
+          <button className="btn-primary w-full" onClick={handleSetPassword}>
             Set Password
           </button>
         </div>

@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const librarySchema = new mongoose.Schema({
   adminId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Admin", 
+    ref: "Admin",
     required: true,
   },
   name: {
@@ -26,6 +26,14 @@ const librarySchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
+  },
+  phoneNumber: {
+    type: String,
+    required: false,
+  },
+  address: {
+    type: String,
+    required: false,
   },
 });
 

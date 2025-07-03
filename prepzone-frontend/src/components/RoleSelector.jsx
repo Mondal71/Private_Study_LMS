@@ -16,7 +16,7 @@ export default function RoleSelector({ action }) {
           User
         </button>
         <button
-          className="btn-primary w-32 bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-100"
+          className="btn-primary w-32"
           onClick={() => navigate(`/admin/${action}`)}
         >
           Admin

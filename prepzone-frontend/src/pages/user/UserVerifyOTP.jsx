@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; // ✅ useEffect for console log
+import { useState, useEffect } from "react";
 import API from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
@@ -6,17 +6,15 @@ import Navbar from "../../components/Navbar";
 export default function UserVerifyOTP() {
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
-  const phone = localStorage.getItem("tempPhone");
+  const email = localStorage.getItem("tempUserEmail"); // ✅ changed from phone
 
-
-  // ✅ Add this useEffect block to see when page renders
   useEffect(() => {
     console.log("UserVerifyOTP page loaded");
   }, []);
 
   const handleVerify = async () => {
     try {
-      const res = await API.post("/users/verify", { phone, otp });
+      const res = await API.post("/users/verify", { email, otp }); // ✅ changed from phone
       console.log("Response:", res.data);
       if (res.data.message === "User verified successfully") {
         navigate("/user/set-password");
@@ -37,7 +35,7 @@ export default function UserVerifyOTP() {
             Verify OTP
           </h2>
           <p className="text-sm text-gray-600 mb-4 text-center">
-            OTP sent to: <span className="font-medium">{phone}</span>
+            OTP sent to: <span className="font-medium">{email}</span>
           </p>
           <input
             type="text"
@@ -47,7 +45,7 @@ export default function UserVerifyOTP() {
             className="input w-full mb-6 text-center tracking-widest"
             maxLength={6}
           />
-          <button className="btn-primary" onClick={handleVerify}>
+          <button className="btn-primary w-full" onClick={handleVerify}>
             Verify OTP
           </button>
         </div>

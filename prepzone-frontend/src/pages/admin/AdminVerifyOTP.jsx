@@ -6,11 +6,11 @@ import Navbar from "../../components/Navbar";
 export default function AdminVerifyOTP() {
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
-  const phone = localStorage.getItem("tempAdminPhone");
+  const email = localStorage.getItem("tempAdminEmail"); //  CHANGED
 
   const handleVerify = async () => {
     try {
-      const res = await API.post("/admin/verify", { phone, otp });
+      const res = await API.post("/admin/verify", { email, otp }); // CHANGED
       if (
         res.data.success ||
         res.data.message === "Admin verified successfully"
@@ -31,7 +31,8 @@ export default function AdminVerifyOTP() {
             Verify OTP (Admin)
           </h2>
           <p className="text-sm text-gray-600 mb-4 text-center">
-            OTP sent to: <span className="font-medium">{phone}</span>
+            OTP sent to: <span className="font-medium">{email}</span>{" "}
+            {/* ✅ CHANGED */}
           </p>
           <input
             type="text"

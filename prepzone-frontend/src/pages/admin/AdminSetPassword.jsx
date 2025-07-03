@@ -7,11 +7,11 @@ export default function AdminSetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const navigate = useNavigate();
-  const phone = localStorage.getItem("tempAdminPhone");
+  const email = localStorage.getItem("tempAdminEmail"); // ✅ CHANGED
 
   const handleSetPassword = async () => {
-    if (!phone) {
-      alert("Phone not found. Please signup again.");
+    if (!email) {
+      alert("Email not found. Please signup again.");
       navigate("/admin/signup");
       return;
     }
@@ -27,9 +27,9 @@ export default function AdminSetPassword() {
     }
 
     try {
-      const res = await API.post("/admin/set-password", { phone, password });
+      const res = await API.post("/admin/set-password", { email, password }); // ✅ CHANGED
       if (res.data.message === "Password set successfully") {
-        localStorage.removeItem("tempAdminPhone");
+        localStorage.removeItem("tempAdminEmail"); // ✅ CHANGED
         alert("Password set! Please login.");
         navigate("/admin/login");
       }

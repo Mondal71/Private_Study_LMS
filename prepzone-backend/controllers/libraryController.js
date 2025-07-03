@@ -1,7 +1,7 @@
 const Library = require("../models/Library");
 
 exports.createLibrary = async (req, res) => {
-  const { name, location, totalSeats, availableSeats, features } = req.body;
+  const { name, location, totalSeats, availableSeats, features, phoneNumber, address} = req.body;
 
   try {
     const adminId = req.user._id;
@@ -12,7 +12,9 @@ exports.createLibrary = async (req, res) => {
       location,
       totalSeats,
       availableSeats,
-      amenities: features, // ✅
+      amenities: features,
+      phoneNumber,
+      address,
     });
 
     await library.save();
@@ -38,7 +40,7 @@ exports.getMyLibraries = async (req, res) => {
 
 exports.updateLibrary = async (req, res) => {
   const libraryId = req.params.id;
-  const { name, location, totalSeats, availableSeats, amenities } = req.body;
+  const { name, location, totalSeats, availableSeats, amenities, phoneNumber, address } = req.body;
 
   try {
     const library = await Library.findById(libraryId);
@@ -58,6 +60,8 @@ exports.updateLibrary = async (req, res) => {
     library.totalSeats = totalSeats || library.totalSeats;
     library.availableSeats = availableSeats || library.availableSeats;
     library.amenities = amenities || library.amenities;
+    library.phoneNumber = phoneNumber || library.phoneNumber;
+    library.address = address || library.address;
 
     await library.save();
 
@@ -82,7 +86,7 @@ exports.deleteLibrary = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized" });
     }
 
-    await Library.findByIdAndDelete(libraryId); // ✅ FIXED
+    await Library.findByIdAndDelete(libraryId); // FIXED
     res.json({ message: "Library deleted successfully" });
   } catch (error) {
     console.error("Delete Library Error:", error.message);
@@ -98,18 +102,18 @@ exports.getAllLibraries = async (req, res) => {
 
     let filter = {};
 
-    // ✅ Filter by location
+    //  Filter by location
     if (location) {
       filter.location = { $regex: location, $options: "i" }; // case-insensitive match
     }
 
-    // ✅ Filter by amenities (comma-separated)
+    // Filter by amenities (comma-separated)
     if (amenities) {
       const amenitiesArray = amenities.split(",");
       filter.amenities = { $all: amenitiesArray }; // must include all requested amenities
     }
 
-    // ✅ Filter by available seats
+    //  Filter by available seats
     if (minSeats) {
       filter.availableSeats = { $gte: parseInt(minSeats) };
     }
@@ -122,7 +126,3 @@ exports.getAllLibraries = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch libraries" });
   }
 };
-
- 
-
-

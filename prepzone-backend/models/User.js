@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  phone: {
+  email: {
     type: String,
     required: true,
     unique: true,
@@ -13,13 +13,17 @@ const userSchema = new mongoose.Schema({
   otp: {
     type: String,
   },
+  otpCreatedAt: {
+    type: Date,
+    default: Date.now,
+  },
   isVerified: {
     type: Boolean,
     default: false,
   },
   password: {
     type: String,
-    required:false
+    required: false,
   },
   createdAt: {
     type: Date,

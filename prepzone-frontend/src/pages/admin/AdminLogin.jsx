@@ -4,18 +4,18 @@ import API from "../../services/api";
 import Navbar from "../../components/Navbar";
 
 export default function AdminLogin() {
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState(""); // ✅ CHANGED
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
-      const res = await API.post("/admin/login", { phone, password });
+      const res = await API.post("/admin/login", { email, password }); // ✅ CHANGED
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", "admin");
-        localStorage.setItem("adminName", res.data.user.name); // ✅ IMPORTANT LINE
+        localStorage.setItem("adminName", res.data.user.name); // ✅ KEEP
         alert("Login successful!");
         navigate("/admin/dashboard");
       }
@@ -23,7 +23,6 @@ export default function AdminLogin() {
       alert(err.response?.data?.error || "Login failed");
     }
   };
-  
 
   return (
     <>
@@ -34,10 +33,10 @@ export default function AdminLogin() {
             Admin Login
           </h2>
           <input
-            type="tel"
-            placeholder="Phone Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="input w-full mb-4"
           />
           <input

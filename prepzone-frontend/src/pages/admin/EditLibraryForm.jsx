@@ -12,25 +12,44 @@ export default function EditLibraryForm() {
     totalSeats: "",
     availableSeats: "",
     amenities: "",
+    phoneNumber: "",
+    address: "",
   });
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    API.get(`/libraries/admin/my-libraries`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then((res) => {
-      const lib = res.data.libraries.find((l) => l._id === id);
-      if (lib) {
+    const fetchLibrary = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await API.get("/libraries/admin/my-libraries", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const lib = res.data.libraries.find((l) => l._id === id);
+        if (!lib) {
+          alert("Library not found");
+          return navigate("/admin/dashboard");
+        }
+
         setForm({
           name: lib.name,
           location: lib.location,
           totalSeats: lib.totalSeats,
           availableSeats: lib.availableSeats,
-          amenities: lib.amenities.join(", "),
+          amenities: lib.amenities?.join(", ") || "",
+          phoneNumber: lib.phoneNumber || "",
+          address: lib.address || "",
         });
+        setLoading(false);
+      } catch (err) {
+        alert("Failed to load library");
+        navigate("/admin/dashboard");
       }
-    });
-  }, [id]);
+    };
+
+    fetchLibrary();
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -45,11 +64,13 @@ export default function EditLibraryForm() {
         .filter(Boolean);
 
       const payload = {
-        name: form.name,
-        location: form.location,
+        name: form.name.trim(),
+        location: form.location.trim(),
         totalSeats: Number(form.totalSeats),
         availableSeats: Number(form.availableSeats),
         amenities,
+        phoneNumber: form.phoneNumber.trim(),
+        address: form.address.trim(),
       };
 
       await API.put(`/libraries/admin/library/${id}`, payload, {
@@ -62,6 +83,17 @@ export default function EditLibraryForm() {
       alert(err.response?.data?.error || "Update failed");
     }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-[90vh] flex justify-center items-center bg-gray-100">
+          <p className="text-xl text-gray-600">Loading library data...</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -109,6 +141,22 @@ export default function EditLibraryForm() {
             name="amenities"
             placeholder="Amenities (comma-separated)"
             value={form.amenities}
+            onChange={handleChange}
+            className="input w-full mb-4"
+          />
+          <input
+            type="text"
+            name="phoneNumber"
+            placeholder="Contact Phone Number"
+            value={form.phoneNumber}
+            onChange={handleChange}
+            className="input w-full mb-4"
+          />
+          <input
+            type="text"
+            name="address"
+            placeholder="Full Address"
+            value={form.address}
             onChange={handleChange}
             className="input w-full mb-6"
           />

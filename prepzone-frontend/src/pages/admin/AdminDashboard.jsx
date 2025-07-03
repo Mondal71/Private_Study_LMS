@@ -1,4 +1,3 @@
-// ✅ Final AdminDashboard.jsx (Updated with View Reservations Button)
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
@@ -87,8 +86,12 @@ export default function AdminDashboard() {
                 <p className="text-gray-600">Total Seats: {lib.totalSeats}</p>
                 <p className="text-gray-600">Available: {lib.availableSeats}</p>
                 <p className="text-sm text-gray-500 italic">
-                  Amenities: {lib.amenities.join(", ")}
+                  Amenities: {lib.amenities?.join(", ") || "--"}
                 </p>
+                <p className="text-gray-600">
+                  Phone: {lib.phoneNumber || "--"}
+                </p>
+                <p className="text-gray-600">Address: {lib.address || "--"}</p>
 
                 <div className="flex gap-3 mt-3">
                   <button
@@ -127,6 +130,3 @@ export default function AdminDashboard() {
     </>
   );
 }
-
-// ✅ Add this route in App.jsx or AdminRoutes.jsx
-// <Route path="/admin/library/:libraryId/reservations" element={<LibraryReservations />} />

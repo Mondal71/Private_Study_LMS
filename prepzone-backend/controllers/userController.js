@@ -1,89 +1,114 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
-  const generateOTP = () =>
-    Math.floor(100000 + Math.random() * 900000).toString();
+// ✅ OTP generator
+const generateOTP = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
 
-  exports.sendOTP = async (req, res) => {
-    const { name, phone } = req.body;
+// ✅ Email sender without separate utils file
+const sendEmailOTP = async (email, otp, name) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
+  });
 
-    if (!name || !phone) {
-      return res.status(400).json({ error: "Name and phone are required" });
-    }
-
-    try {
-      const otp = generateOTP();
-      console.log("Generated OTP:", otp);
-
-      let user = await User.findOne({ phone });
-
-      if (!user) {
-        user = new User({ name, phone, otp, isVerified: false });
-      } else {
-        user.name = name;
-        user.otp = otp;
-        user.isVerified = false;
-      }
-
-      const savedUser = await user.save();
-      console.log("User saved with OTP:", savedUser);
-
-      return res.status(200).json({ message: "OTP sent successfully" });
-    } catch (err) {
-      console.error("OTP Send Error:", err.message);
-      return res.status(500).json({ error: "Failed to send OTP" });
-    }
+  const mailOptions = {
+    from: process.env.MAIL_USER,
+    to: email,
+    subject: "Your PrepZone OTP",
+    text: `Hi ${name}, your OTP for PrepZone verification is: ${otp}`,
   };
 
-  // Verify OTP
-  exports.verifyOTP = async (req, res) => {
-    const { phone, otp } = req.body;
-    console.log("Verifying OTP for:", phone, otp);
+  await transporter.sendMail(mailOptions);
+};
 
-    if (!phone || !otp) {
-      return res.status(400).json({ error: "Phone and OTP are required" });
-    }
+// ✅ Send OTP
+exports.sendOTP = async (req, res) => {
+  const { name, email } = req.body;
 
-    try {
-      const user = await User.findOne({ phone });
-
-      if (!user) {
-        console.log("User not found");
-        return res.status(400).json({ error: "User not found" });
-      }
-
-      console.log("OTP in DB:", user.otp);
-      if (!user.otp || user.otp.toString() !== otp.toString()) {
-        return res.status(400).json({ error: "Invalid OTP" });
-      }
-
-      user.isVerified = true;
-      user.otp = "";
-      await user.save();
-
-      return res.status(200).json({ message: "User verified successfully" });
-    } catch (err) {
-      console.error("Verify OTP Error:", err.message);
-      return res.status(500).json({ error: "OTP verification failed" });
-    }
-  };
-  
-  
-// Set password after OTP verification
-exports.setPassword = async (req, res) => {
-  const { phone, password } = req.body;
+  if (!name || !email) {
+    return res.status(400).json({ error: "Name and email are required" });
+  }
 
   try {
-    const user = await User.findOne({ phone });
+    const otp = generateOTP();
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({ name, email, otp, isVerified: false });
+    } else {
+      user.name = name;
+      admin.otp = otp;
+      admin.otpCreatedAt = Date.now();
+      user.isVerified = false;
+    }
+
+    await user.save();
+    await sendEmailOTP(email, otp, name);
+
+    return res.status(200).json({ message: "OTP sent to email successfully" });
+  } catch (err) {
+    console.error("OTP Send Error:", err.message);
+    return res.status(500).json({ error: "Failed to send OTP" });
+  }
+};
+
+// ✅ Verify OTP
+exports.verifyOTP = async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ error: "Email and OTP are required" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user || user.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Check if OTP expired (5 minutes = 5 * 60 * 1000 ms)
+    const isExpired =
+      Date.now() - new Date(user.otpCreatedAt).getTime() > 5 * 60 * 1000;
+    if (isExpired) {
+      return res
+        .status(400)
+        .json({ error: "OTP expired. Please request a new one." });
+    }
+    
+
+    user.isVerified = true;
+    user.otp = "";
+    await user.save();
+
+    return res.status(200).json({ message: "User verified successfully" });
+  } catch (err) {
+    console.error("Verify OTP Error:", err.message);
+    return res.status(500).json({ error: "OTP verification failed" });
+  }
+};
+
+// ✅ Set Password
+exports.setPassword = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
 
     if (!user || !user.isVerified) {
-      return res.status(400).json({ error: "OTP not verified or user not found" });
+      return res
+        .status(400)
+        .json({ error: "OTP not verified or user not found" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     user.password = hashedPassword;
-
     await user.save();
 
     res.status(200).json({ message: "Password set successfully" });
@@ -93,15 +118,17 @@ exports.setPassword = async (req, res) => {
   }
 };
 
-// Login
+// ✅ Login
 exports.login = async (req, res) => {
-  const { phone, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ email });
 
     if (!user || !user.password) {
-      return res.status(400).json({ error: "User not found or password not set" });
+      return res
+        .status(400)
+        .json({ error: "User not found or password not set" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -110,7 +137,7 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user._id, phone: user.phone, role: user.role },
+      { userId: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );

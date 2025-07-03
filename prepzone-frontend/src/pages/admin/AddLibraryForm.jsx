@@ -11,6 +11,8 @@ export default function AddLibraryForm() {
     totalSeats: "",
     availableSeats: "",
     amenities: "",
+    phoneNumber: "",
+    address: "",
   });
 
   const handleChange = (e) => {
@@ -20,20 +22,22 @@ export default function AddLibraryForm() {
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
-      const features = form.amenities
+      const amenities = form.amenities
         .split(",")
-        .map((f) => f.trim())
-        .filter((f) => f !== "");
+        .map((a) => a.trim())
+        .filter((a) => a !== "");
 
       const payload = {
         name: form.name,
         location: form.location,
         totalSeats: Number(form.totalSeats),
         availableSeats: Number(form.availableSeats),
-        features,
+        amenities,
+        phoneNumber: form.phoneNumber,
+        address: form.address,
       };
 
-      const res = await API.post("/libraries/admin/library", payload, {
+      await API.post("/libraries/admin/library", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -64,7 +68,7 @@ export default function AddLibraryForm() {
           <input
             type="text"
             name="location"
-            placeholder="Location"
+            placeholder="City/Area"
             value={form.location}
             onChange={handleChange}
             className="input w-full mb-4"
@@ -91,9 +95,24 @@ export default function AddLibraryForm() {
             placeholder="Amenities (comma-separated)"
             value={form.amenities}
             onChange={handleChange}
+            className="input w-full mb-4"
+          />
+          <input
+            type="text"
+            name="phoneNumber"
+            placeholder="Contact Number"
+            value={form.phoneNumber}
+            onChange={handleChange}
+            className="input w-full mb-4"
+          />
+          <input
+            type="text"
+            name="address"
+            placeholder="Full Address"
+            value={form.address}
+            onChange={handleChange}
             className="input w-full mb-6"
           />
-
           <button className="btn-primary w-full" onClick={handleSubmit}>
             Submit Library
           </button>

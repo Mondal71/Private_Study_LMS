@@ -1,34 +1,57 @@
 const jwt = require("jsonwebtoken");
 const Admin = require("../models/Admin");
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
 
-// Generate 6-digit OTP
+// ✅ Generate 6-digit OTP
 const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
+// ✅ Send OTP to email
+const sendEmailOTP = async (email, otp) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.MAIL_USER,
+    to: email,
+    subject: "Your OTP for Admin Signup",
+    text: `Your OTP is: ${otp}`,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
 // =================== SEND OTP ===================
 exports.sendOTP = async (req, res) => {
-  const { name, phone } = req.body;
+  const { name, email } = req.body;
 
   try {
-    let admin = await Admin.findOne({ phone });
+    let admin = await Admin.findOne({ email });
 
     const otp = generateOTP();
 
     if (!admin) {
-      admin = new Admin({ name, phone, otp });
+      // ✅ FIXED: Include otpCreatedAt here
+      admin = new Admin({ name, email, otp, otpCreatedAt: Date.now() });
     } else {
       admin.otp = otp;
-      admin.name = name; // ✅ optional update
+      admin.otpCreatedAt = Date.now();
+      admin.name = name;
     }
 
     await admin.save();
 
-    console.log("📨 OTP for Admin", phone, "is:", otp);
+    await sendEmailOTP(email, otp);
 
     res.status(200).json({
       success: true,
-      message: "OTP sent to admin successfully",
+      message: "OTP sent to email successfully",
     });
   } catch (error) {
     console.error("OTP Send Error:", error);
@@ -38,17 +61,34 @@ exports.sendOTP = async (req, res) => {
 
 // =================== VERIFY OTP ===================
 exports.verifyOTP = async (req, res) => {
-  const { phone, otp } = req.body;
+  const { email, otp } = req.body;
 
   try {
-    const admin = await Admin.findOne({ phone });
+    const admin = await Admin.findOne({ email });
 
-    if (!admin || admin.otp !== otp) {
+    if (!admin) {
+      return res.status(400).json({ error: "Admin not found" });
+    }
+
+    // ✅ Check if OTP matches latest one
+    if (!admin.otp || admin.otp !== otp) {
       return res.status(400).json({ error: "Invalid OTP" });
     }
 
+    // ✅ Check if OTP expired (5 mins)
+    const isExpired =
+      Date.now() - new Date(admin.otpCreatedAt).getTime() > 5 * 60 * 1000;
+    if (isExpired) {
+      return res
+        .status(400)
+        .json({ error: "OTP expired. Please request a new one." });
+    }
+
+    // ✅ All OK: Mark verified, clear OTP and timestamp
     admin.isVerified = true;
     admin.otp = "";
+    admin.otpCreatedAt = null;
+
     await admin.save();
 
     res.status(200).json({
@@ -56,16 +96,16 @@ exports.verifyOTP = async (req, res) => {
       message: "Admin verified successfully",
     });
   } catch (error) {
+    console.error("Verify OTP Error:", error);
     res.status(500).json({ error: "OTP verification failed" });
   }
 };
-
 // =================== SET PASSWORD ===================
 exports.setPassword = async (req, res) => {
-  const { phone, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const admin = await Admin.findOne({ phone });
+    const admin = await Admin.findOne({ email });
 
     if (!admin || !admin.isVerified) {
       return res
@@ -79,16 +119,17 @@ exports.setPassword = async (req, res) => {
 
     res.status(200).json({ message: "Password set successfully" });
   } catch (error) {
+    console.error("Set Password Error:", error);
     res.status(500).json({ error: "Failed to set password" });
   }
 };
 
 // =================== LOGIN ===================
 exports.login = async (req, res) => {
-  const { phone, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const admin = await Admin.findOne({ phone });
+    const admin = await Admin.findOne({ email });
 
     if (!admin || !admin.password) {
       return res
@@ -103,7 +144,7 @@ exports.login = async (req, res) => {
 
     const payload = {
       id: admin._id,
-      phone: admin.phone,
+      email: admin.email,
       role: "admin",
     };
 
@@ -117,12 +158,12 @@ exports.login = async (req, res) => {
       user: {
         _id: admin._id,
         name: admin.name,
-        phone: admin.phone,
+        email: admin.email,
         role: "admin",
       },
     });
   } catch (error) {
-    console.log(error);
+    console.error("Login Error:", error);
     res.status(500).json({ error: "Login failed" });
   }
 };

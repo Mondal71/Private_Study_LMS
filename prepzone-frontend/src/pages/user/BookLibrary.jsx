@@ -4,22 +4,38 @@ import API from "../../services/api";
 import Navbar from "../../components/Navbar";
 
 export default function BookLibrary() {
-  const { id: libraryId } = useParams();
+  const { libraryId } = useParams();
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     aadhar: "",
     phone: "",
-    paymentMode: "offline",
+    paymentMode: "online",
     photo: null,
   });
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    setForm((prev) => ({ ...prev, photo: e.target.files[0] }));
   };
 
   const handleSubmit = async () => {
     if (!form.aadhar || !form.phone || !form.photo) {
       alert("Please fill all required fields and upload a photo.");
+      return;
+    }
+
+    if (!/^\d{12}$/.test(form.aadhar)) {
+      alert("Aadhar number must be 12 digits.");
+      return;
+    }
+
+    if (!/^\d{10}$/.test(form.phone)) {
+      alert("Phone number must be 10 digits.");
       return;
     }
 
@@ -49,43 +65,51 @@ export default function BookLibrary() {
   return (
     <>
       <Navbar />
-      <div className="min-h-[80vh] flex justify-center items-center bg-gray-100">
-        <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-          <h2 className="text-2xl font-bold text-indigo-700 mb-4 text-center">
+      <div className="min-h-[85vh] flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+          <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">
             Book Your Seat
           </h2>
+
           <input
+            type="text"
             name="aadhar"
             placeholder="Aadhar Number"
             value={form.aadhar}
             onChange={handleChange}
             className="input w-full mb-4"
+            maxLength={12}
           />
+
           <input
+            type="tel"
             name="phone"
             placeholder="Phone Number"
             value={form.phone}
             onChange={handleChange}
             className="input w-full mb-4"
+            maxLength={10}
           />
-          <label className="block font-medium mb-2">Payment Mode:</label>
+
           <select
             name="paymentMode"
             value={form.paymentMode}
             onChange={handleChange}
-            className="input w-full mb-6"
+            className="input w-full mb-4"
           >
-            <option value="offline">Offline</option>
             <option value="online">Online</option>
+            <option value="offline">Offline</option>
           </select>
+
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setForm({ ...form, photo: e.target.files[0] })}
-            className="input w-full mb-4"
+            onChange={handleFileChange}
+            className="input w-full mb-6"
           />
+
           <button className="btn-primary w-full" onClick={handleSubmit}>
-            Submit Booking
+            Book Now
           </button>
         </div>
       </div>

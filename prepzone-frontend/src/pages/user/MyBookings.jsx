@@ -71,6 +71,15 @@ export default function MyBookings() {
                   <strong>Library:</strong> {res.libraryId?.name || "Unknown"}
                 </p>
                 <p>
+                  <strong>Address:</strong> {res.libraryId?.location || "N/A"}
+                </p>
+                <p>
+                  <strong>Aadhar:</strong> {res.aadhar || "N/A"}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {res.phoneNumber || "N/A"}
+                </p>
+                <p>
                   <strong>Payment Mode:</strong> {res.paymentMode}
                 </p>
                 <p>
@@ -91,6 +100,18 @@ export default function MyBookings() {
                   <strong>Message:</strong>{" "}
                   {res.message ? res.message : "Waiting for admin response..."}
                 </p>
+                <p>
+                  <strong>Booked On:</strong>{" "}
+                  {new Date(res.createdAt).toLocaleString()}
+                </p>
+
+                {res.photo && (
+                  <img
+                    src={`http://localhost:5000${res.photo}`}
+                    alt="User"
+                    className="w-24 h-24 mt-2 border rounded"
+                  />
+                )}
 
                 {res.status !== "cancelled" && (
                   <button

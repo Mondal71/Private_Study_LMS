@@ -5,21 +5,25 @@ import Navbar from "../../components/Navbar";
 
 export default function UserSignup() {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState(""); // ✅ updated from phone
   const navigate = useNavigate();
 
   const handleSignup = async () => {
+    if (!name || !email) {
+      return alert("Please enter name and email");
+    }
+
     try {
-      const res = await API.post("/users/signup", { name, phone });
-      if (res.data.message === "OTP sent successfully") {
-        localStorage.setItem("tempPhone", phone);
+      const res = await API.post("/users/signup", { name, email }); // ✅ use email
+      if (res.data.message === "OTP sent to email successfully") {
+        localStorage.setItem("tempUserEmail", email); // ✅ store email instead of phone
         navigate("/user/verify");
       }
     } catch (err) {
       alert(err.response?.data?.error || "Something went wrong");
     }
   };
-  
+
   return (
     <>
       <Navbar />
@@ -36,13 +40,13 @@ export default function UserSignup() {
             className="input w-full mb-4"
           />
           <input
-            type="tel"
-            placeholder="Phone Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            type="email"
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="input w-full mb-6"
           />
-          <button className="btn-primary" onClick={handleSignup}>
+          <button className="btn-primary w-full" onClick={handleSignup}>
             Send OTP
           </button>
         </div>

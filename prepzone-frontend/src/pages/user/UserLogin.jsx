@@ -4,23 +4,23 @@ import API from "../../services/api";
 import Navbar from "../../components/Navbar";
 
 export default function UserLogin() {
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState(""); // ✅ changed from phone to email
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    if (!phone || !password) {
-      return alert("Please enter phone and password");
+    if (!email || !password) {
+      return alert("Please enter email and password");
     }
 
     try {
-      const res = await API.post("/users/login", { phone, password });
+      const res = await API.post("/users/login", { email, password }); // ✅ use email
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", "user");
         alert("Login successful!");
-        navigate("/user/dashboard"); // ✅ Setup this route next
+        navigate("/user/dashboard");
       }
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
@@ -36,10 +36,10 @@ export default function UserLogin() {
             User Login
           </h2>
           <input
-            type="tel"
-            placeholder="Phone Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            type="email"
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="input w-full mb-4"
           />
           <input
