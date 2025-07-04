@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../../api"; 
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import noImage from "../../photo/default.jpg";
@@ -16,10 +16,9 @@ export default function Dashboard() {
       return;
     }
 
-    axios
-      .get("/api/libraries/all", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    API.get("/libraries/all", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((response) => {
         setLibraries(response.data.libraries);
       })
@@ -77,7 +76,6 @@ export default function Dashboard() {
                     : "N/A"}
                 </p>
 
-                {/* Price Section */}
                 <div className="text-sm text-gray-700 mt-3 space-y-1">
                   <p>
                     <strong>Price (6hr):</strong> ₹
