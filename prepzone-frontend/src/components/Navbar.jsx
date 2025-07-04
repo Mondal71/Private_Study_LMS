@@ -18,6 +18,7 @@ export default function Navbar({ onSearch }) {
 
   return (
     <header className="bg-white shadow sticky top-0 z-50 w-full">
+      {/* Top Navbar Row */}
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
@@ -31,7 +32,7 @@ export default function Navbar({ onSearch }) {
           </h1>
         </Link>
 
-        {/* Search (desktop only) */}
+        {/* Desktop Search */}
         {showSearch && (
           <input
             type="text"
@@ -93,10 +94,10 @@ export default function Navbar({ onSearch }) {
           )}
         </nav>
 
-        {/* Hamburger Icon - Mobile */}
+        {/* Hamburger Button - Mobile */}
         <div className="md:hidden">
           <button
-            onClick={() => setIsMenuOpen((prev) => !prev)}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="text-gray-700 focus:outline-none"
           >
             <svg
@@ -125,24 +126,30 @@ export default function Navbar({ onSearch }) {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden px-6 pb-4 space-y-3 bg-white border-t border-gray-200">
-          {showSearch && (
-            <input
-              type="text"
-              placeholder="Search by location..."
-              onChange={(e) => onSearch && onSearch(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-indigo-300"
-            />
-          )}
+      {/* Search Bar - Mobile (Below Logo) */}
+      {showSearch && (
+        <div className="md:hidden px-4 pb-2">
+          <input
+            type="text"
+            placeholder="Search..."
+            onChange={(e) => onSearch && onSearch(e.target.value)}
+            className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring focus:border-indigo-300"
+          />
+        </div>
+      )}
 
-          <Link to="/" className="block text-gray-700 hover:text-indigo-600">
+      {/* Mobile Dropdown Menu */}
+      {isMenuOpen && (
+        <div className="absolute top-[70px] right-4 bg-white border rounded-lg shadow-lg p-4 w-[75%] max-w-[250px] z-50 md:hidden">
+          <Link
+            to="/"
+            className="block text-gray-700 hover:text-indigo-600 mb-2"
+          >
             Home
           </Link>
           <Link
             to="/about"
-            className="block text-gray-700 hover:text-indigo-600"
+            className="block text-gray-700 hover:text-indigo-600 mb-2"
           >
             About
           </Link>
@@ -151,13 +158,13 @@ export default function Navbar({ onSearch }) {
             <>
               <Link
                 to="/user/dashboard"
-                className="block text-gray-700 hover:text-indigo-600"
+                className="block text-gray-700 hover:text-indigo-600 mb-2"
               >
                 Dashboard
               </Link>
               <Link
                 to="/user/my-bookings"
-                className="block text-gray-700 hover:text-indigo-600"
+                className="block text-gray-700 hover:text-indigo-600 mb-2"
               >
                 My Bookings
               </Link>
@@ -167,7 +174,7 @@ export default function Navbar({ onSearch }) {
           {isLoggedIn && role === "admin" && (
             <Link
               to="/admin/dashboard"
-              className="block text-gray-700 hover:text-indigo-600"
+              className="block text-gray-700 hover:text-indigo-600 mb-2"
             >
               Admin Panel
             </Link>
@@ -176,7 +183,7 @@ export default function Navbar({ onSearch }) {
           {!isLoggedIn ? (
             <Link
               to="/user/login"
-              className="block bg-indigo-600 text-white px-4 py-2 rounded-md text-center"
+              className="block bg-indigo-600 text-white text-center px-4 py-2 rounded-md"
             >
               Login
             </Link>
