@@ -6,6 +6,7 @@ import Navbar from "../../components/Navbar";
 export default function EditLibraryForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     location: "",
@@ -14,6 +15,9 @@ export default function EditLibraryForm() {
     amenities: "",
     phoneNumber: "",
     address: "",
+    sixHour: "",
+    twelveHour: "",
+    twentyFourHour: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -40,6 +44,9 @@ export default function EditLibraryForm() {
           amenities: lib.amenities?.join(", ") || "",
           phoneNumber: lib.phoneNumber || "",
           address: lib.address || "",
+          sixHour: lib.prices?.sixHour || "",
+          twelveHour: lib.prices?.twelveHour || "",
+          twentyFourHour: lib.prices?.twentyFourHour || "",
         });
         setLoading(false);
       } catch (err) {
@@ -58,6 +65,7 @@ export default function EditLibraryForm() {
   const handleUpdate = async () => {
     try {
       const token = localStorage.getItem("token");
+
       const amenities = form.amenities
         .split(",")
         .map((a) => a.trim())
@@ -71,6 +79,11 @@ export default function EditLibraryForm() {
         amenities,
         phoneNumber: form.phoneNumber.trim(),
         address: form.address.trim(),
+        prices: {
+          sixHour: Number(form.sixHour),
+          twelveHour: Number(form.twelveHour),
+          twentyFourHour: Number(form.twentyFourHour),
+        },
       };
 
       await API.put(`/libraries/admin/library/${id}`, payload, {
@@ -158,8 +171,37 @@ export default function EditLibraryForm() {
             placeholder="Full Address"
             value={form.address}
             onChange={handleChange}
-            className="input w-full mb-6"
+            className="input w-full mb-4"
           />
+
+          {/* ✅ Pricing fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <input
+              type="number"
+              name="sixHour"
+              placeholder="Price (6 hrs)"
+              value={form.sixHour}
+              onChange={handleChange}
+              className="input"
+            />
+            <input
+              type="number"
+              name="twelveHour"
+              placeholder="Price (12 hrs)"
+              value={form.twelveHour}
+              onChange={handleChange}
+              className="input"
+            />
+            <input
+              type="number"
+              name="twentyFourHour"
+              placeholder="Price (24 hrs)"
+              value={form.twentyFourHour}
+              onChange={handleChange}
+              className="input"
+            />
+          </div>
+
           <button className="btn-primary w-full" onClick={handleUpdate}>
             Save Changes
           </button>

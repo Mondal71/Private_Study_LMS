@@ -8,6 +8,7 @@ export default function BookLibrary() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [paymentMode, setPaymentMode] = useState("online");
+  const [duration, setDuration] = useState("6hr"); // ✅ Default duration
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -20,7 +21,7 @@ export default function BookLibrary() {
     try {
       const res = await API.post(
         `/reservations/book/${id}`,
-        { aadhar, email, phoneNumber: phone, paymentMode },
+        { aadhar, email, phoneNumber: phone, paymentMode, duration }, // ✅ Include duration
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -67,8 +68,24 @@ export default function BookLibrary() {
             placeholder="Phone Number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="input w-full mb-6"
+            className="input w-full mb-4"
           />
+
+          {/* ✅ Duration Selection */}
+          <div className="mb-4">
+            <label className="block font-medium text-gray-700 mb-2">
+              Duration
+            </label>
+            <select
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="input w-full"
+            >
+              <option value="6hr">6 Hours</option>
+              <option value="12hr">12 Hours</option>
+              <option value="24hr">24 Hours</option>
+            </select>
+          </div>
 
           <div className="mb-6">
             <label className="block font-medium text-gray-700 mb-2">
@@ -86,7 +103,7 @@ export default function BookLibrary() {
 
           <div className="bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg text-sm mb-6">
             <strong>Note:</strong> Please bring your original{" "}
-            <strong>Aadhar card</strong>, a <strong>photo copy</strong>, and a{" "}
+            <strong>Aadhar card</strong>, an aadhar card <strong>photo copy</strong>, and a{" "}
             <strong>passport-size photo</strong> with you when visiting the
             library.
           </div>

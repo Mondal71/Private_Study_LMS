@@ -70,15 +70,32 @@ export default function Dashboard() {
                 <p className="text-gray-600 text-sm mb-1">
                   <strong>Address:</strong> {library.address || "N/A"}
                 </p>
-                <p className="text-gray-600 text-sm mb-3">
+                <p className="text-gray-600 text-sm mb-1">
                   <strong>Amenities:</strong>{" "}
                   {Array.isArray(library.amenities)
                     ? library.amenities.join(", ")
                     : "N/A"}
                 </p>
+
+                {/* 💰 Price Section */}
+                <div className="text-sm text-gray-700 mt-3 space-y-1">
+                  <p>
+                    <strong>Price (6hr):</strong> ₹
+                    {library?.prices?.sixHour || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Price (12hr):</strong> ₹
+                    {library?.prices?.twelveHour || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Price (24hr):</strong> ₹
+                    {library?.prices?.twentyFourHour || "N/A"}
+                  </p>
+                </div>
+
                 <button
                   onClick={() => navigate(`/user/book/${library._id}`)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full mt-4"
                 >
                   Book Now
                 </button>

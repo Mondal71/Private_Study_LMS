@@ -1,10 +1,28 @@
 const Library = require("../models/Library");
 
+// ✅ CREATE LIBRARY
+// ✅ CREATE LIBRARY
 exports.createLibrary = async (req, res) => {
-  const { name, location, totalSeats, availableSeats, features, phoneNumber, address} = req.body;
+  const {
+    name,
+    location,
+    totalSeats,
+    availableSeats,
+    amenities, // ✅ This should be amenities, not features
+    phoneNumber,
+    address,
+    prices,
+  } = req.body;
 
   try {
     const adminId = req.user._id;
+
+    const parsedAmenities =
+      Array.isArray(amenities)
+        ? amenities
+        : typeof amenities === "string"
+        ? amenities.split(",").map((item) => item.trim())
+        : [];
 
     const library = new Library({
       adminId,
@@ -12,9 +30,14 @@ exports.createLibrary = async (req, res) => {
       location,
       totalSeats,
       availableSeats,
-      amenities: features,
+      amenities: parsedAmenities,
       phoneNumber,
       address,
+      prices: {
+        sixHour: prices?.sixHour || 0,
+        twelveHour: prices?.twelveHour || 0,
+        twentyFourHour: prices?.twentyFourHour || 0,
+      },
     });
 
     await library.save();
@@ -25,11 +48,11 @@ exports.createLibrary = async (req, res) => {
   }
 };
 
-// Get all libraries by current admin
+
+// ✅ GET ALL LIBRARIES by current ADMIN
 exports.getMyLibraries = async (req, res) => {
   try {
-    const adminId = req.user._id; // assuming req.user is set by verifyToken middleware
-
+    const adminId = req.user._id;
     const libraries = await Library.find({ adminId });
     res.status(200).json({ libraries });
   } catch (error) {
@@ -38,18 +61,24 @@ exports.getMyLibraries = async (req, res) => {
   }
 };
 
+// ✅ UPDATE LIBRARY
 exports.updateLibrary = async (req, res) => {
   const libraryId = req.params.id;
-  const { name, location, totalSeats, availableSeats, amenities, phoneNumber, address } = req.body;
+  const {
+    name,
+    location,
+    totalSeats,
+    availableSeats,
+    amenities,
+    phoneNumber,
+    address,
+    prices,
+  } = req.body;
 
   try {
     const library = await Library.findById(libraryId);
+    if (!library) return res.status(404).json({ error: "Library not found" });
 
-    if (!library) {
-      return res.status(404).json({ error: "Library not found" });
-    }
-
-    // Only the admin who created the library can update
     if (library.adminId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Unauthorized" });
     }
@@ -63,8 +92,16 @@ exports.updateLibrary = async (req, res) => {
     library.phoneNumber = phoneNumber || library.phoneNumber;
     library.address = address || library.address;
 
-    await library.save();
+    // ✅ Update pricing if provided
+    if (prices) {
+      library.prices = {
+        sixHour: prices.sixHour ?? library.prices.sixHour,
+        twelveHour: prices.twelveHour ?? library.prices.twelveHour,
+        twentyFourHour: prices.twentyFourHour ?? library.prices.twentyFourHour,
+      };
+    }
 
+    await library.save();
     res.json({ message: "Library updated", library });
   } catch (error) {
     console.error("Update Library Error:", error.message);
@@ -72,21 +109,19 @@ exports.updateLibrary = async (req, res) => {
   }
 };
 
+// ✅ DELETE LIBRARY
 exports.deleteLibrary = async (req, res) => {
   const libraryId = req.params.id;
 
   try {
     const library = await Library.findById(libraryId);
-
-    if (!library) {
-      return res.status(404).json({ error: "Library not found" });
-    }
+    if (!library) return res.status(404).json({ error: "Library not found" });
 
     if (library.adminId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Unauthorized" });
     }
 
-    await Library.findByIdAndDelete(libraryId); // FIXED
+    await Library.findByIdAndDelete(libraryId);
     res.json({ message: "Library deleted successfully" });
   } catch (error) {
     console.error("Delete Library Error:", error.message);
@@ -94,32 +129,26 @@ exports.deleteLibrary = async (req, res) => {
   }
 };
 
-
-// 🔍 Public: Get all libraries
+//  PUBLIC: GET ALL LIBRARIES
 exports.getAllLibraries = async (req, res) => {
   try {
     const { location, amenities, minSeats } = req.query;
-
     let filter = {};
 
-    //  Filter by location
     if (location) {
-      filter.location = { $regex: location, $options: "i" }; // case-insensitive match
+      filter.location = { $regex: location, $options: "i" };
     }
 
-    // Filter by amenities (comma-separated)
     if (amenities) {
       const amenitiesArray = amenities.split(",");
-      filter.amenities = { $all: amenitiesArray }; // must include all requested amenities
+      filter.amenities = { $all: amenitiesArray };
     }
 
-    //  Filter by available seats
     if (minSeats) {
       filter.availableSeats = { $gte: parseInt(minSeats) };
     }
 
     const libraries = await Library.find(filter).populate("adminId", "name");
-
     res.status(200).json({ libraries });
   } catch (error) {
     console.error("Filter Libraries Error:", error.message);

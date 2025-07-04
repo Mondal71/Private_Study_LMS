@@ -193,12 +193,12 @@ exports.verifyForgotOTP = async (req, res) => {
 
 // Step 3: Reset Password
 exports.resetPassword = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, newPassword } = req.body;
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const hashed = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(newPassword, 10);
     user.password = hashed;
     await user.save();
 

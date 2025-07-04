@@ -83,6 +83,9 @@ export default function MyBookings() {
                   <strong>Payment Mode:</strong> {res.paymentMode}
                 </p>
                 <p>
+                  <strong>Duration:</strong> {res.duration || "N/A"}
+                </p>
+                <p>
                   <strong>Status:</strong>{" "}
                   <span
                     className={`font-semibold ${
@@ -105,20 +108,22 @@ export default function MyBookings() {
                   {new Date(res.createdAt).toLocaleString()}
                 </p>
 
-                {res.photo && (
-                  <img
-                    src={`http://localhost:5000${res.photo}`}
-                    alt="User"
-                    className="w-24 h-24 mt-2 border rounded"
-                  />
-                )}
-
-                {res.status !== "cancelled" && (
+                {/* ✅ CONDITIONAL BUTTON */}
+                {res.status === "pending" && (
                   <button
                     onClick={() => handleCancel(res._id)}
                     className="mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                   >
-                    Cancel Booking
+                    ❌ Cancel Booking
+                  </button>
+                )}
+
+                {res.status === "confirmed" && (
+                  <button
+                    onClick={() => handleCancel(res._id)}
+                    className="mt-2 bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                  >
+                    🔔 Cancel Subscription
                   </button>
                 )}
               </div>

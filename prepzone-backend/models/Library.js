@@ -23,10 +23,6 @@ const librarySchema = new mongoose.Schema({
     required: true,
   },
   amenities: [String],
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
   phoneNumber: {
     type: String,
     required: false,
@@ -34,6 +30,24 @@ const librarySchema = new mongoose.Schema({
   address: {
     type: String,
     required: false,
+  },
+  prices: {
+    sixHour: {
+      type: Number,
+      required:false,
+    },
+    twelveHour: {
+      type: Number,
+      required:false,
+    },
+    twentyFourHour: {
+      type: Number,
+      required:false,
+    },
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

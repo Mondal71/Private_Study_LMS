@@ -93,6 +93,22 @@ export default function AdminDashboard() {
                 </p>
                 <p className="text-gray-600">Address: {lib.address || "--"}</p>
 
+                {/* ✅ Pricing Section */}
+                <div className="mt-3 text-sm text-gray-800 space-y-1">
+                  <p>
+                    <strong>Price (6hr):</strong> ₹
+                    {lib?.prices?.sixHour || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Price (12hr):</strong> ₹
+                    {lib?.prices?.twelveHour || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Price (24hr):</strong> ₹
+                    {lib?.prices?.twentyFourHour || "N/A"}
+                  </p>
+                </div>
+
                 <div className="flex gap-3 mt-3">
                   <button
                     onClick={() => navigate(`/admin/edit-library/${lib._id}`)}

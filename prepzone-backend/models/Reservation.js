@@ -11,12 +11,8 @@ const reservationSchema = new mongoose.Schema({
     ref: "Library",
     required: true,
   },
-  aadhar: {
-    type: String,
-  },
-  phoneNumber: {
-    type: String,
-  },
+  aadhar: String,
+  phoneNumber: String,
   email: {
     type: String,
     required: false,
@@ -35,13 +31,22 @@ const reservationSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  duration: {
+    type: String,
+    enum: ["6hr", "12hr", "24hr"],
+    required: false,
+    default: "6hr",
+  },
+  price: {
+    type: Number,
+    required: false,
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
-  expiresAt: {
-    type: Date,
-  },
+  expiresAt: Date,
   message: {
     type: String,
     default: "",

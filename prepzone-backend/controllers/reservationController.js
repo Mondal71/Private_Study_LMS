@@ -1,14 +1,33 @@
 const Reservation = require("../models/Reservation");
 const Library = require("../models/Library");
 
+//  Book a Seat
 exports.bookSeat = async (req, res) => {
-  const { aadhar, email, phoneNumber, paymentMode } = req.body;
+  const { aadhar, email, phoneNumber, paymentMode, duration } = req.body;
   const libraryId = req.params.id;
 
   try {
     const library = await Library.findById(libraryId);
     if (!library || library.availableSeats < 1) {
       return res.status(400).json({ error: "No seats available" });
+    }
+
+    // Validate duration
+    const validDurations = ["6hr", "12hr", "24hr"];
+    if (!validDurations.includes(duration)) {
+      return res.status(400).json({ error: "Invalid duration" });
+    }
+
+    // ✅ Fix for accessing price
+    let price;
+    if (duration === "6hr") price = library.prices.sixHour;
+    else if (duration === "12hr") price = library.prices.twelveHour;
+    else if (duration === "24hr") price = library.prices.twentyFourHour;
+
+    if (price === undefined || price === null) {
+      return res
+        .status(400)
+        .json({ error: "Price not set for selected duration" });
     }
 
     const expiresAt =
@@ -21,6 +40,8 @@ exports.bookSeat = async (req, res) => {
       email,
       phoneNumber,
       paymentMode,
+      duration,
+      price,
       isPaid: false,
       status: "pending",
       expiresAt,
@@ -28,15 +49,19 @@ exports.bookSeat = async (req, res) => {
 
     await reservation.save();
 
-    res
-      .status(201)
-      .json({ success: true, message: "Seat reserved", reservation });
+    res.status(201).json({
+      success: true,
+      message: "Seat reserved",
+      reservation,
+    });
   } catch (error) {
     console.error("Book Seat Error:", error.message);
     res.status(500).json({ error: "Failed to book seat" });
   }
 };
 
+
+//  Get my reservations
 exports.getMyReservations = async (req, res) => {
   try {
     const reservations = await Reservation.find({ userId: req.user._id })
@@ -50,6 +75,7 @@ exports.getMyReservations = async (req, res) => {
   }
 };
 
+//  Cancel reservation
 exports.cancelReservation = async (req, res) => {
   const reservationId = req.params.id;
 
@@ -60,22 +86,20 @@ exports.cancelReservation = async (req, res) => {
       return res.status(404).json({ error: "Reservation not found" });
     }
 
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
     if (reservation.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Unauthorized" });
     }
 
-    if (reservation.status === "cancelled") {
-      return res.status(400).json({ error: "Reservation already cancelled" });
-    }
-
-    // ✅ Check if confirmed BEFORE marking cancelled
     const wasConfirmed = reservation.status === "confirmed";
 
     reservation.status = "cancelled";
     reservation.message = "Admission cancelled by user";
     await reservation.save();
 
-    // ✅ Only refund seat if it was confirmed
     if (wasConfirmed) {
       const library = await Library.findById(reservation.libraryId);
       if (library) {
@@ -92,6 +116,7 @@ exports.cancelReservation = async (req, res) => {
 };
 
 
+//  Auto cancel unpaid reservations (offline)
 exports.autoCancelUnpaidReservations = async () => {
   try {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -104,11 +129,9 @@ exports.autoCancelUnpaidReservations = async () => {
     });
 
     for (const reservation of reservations) {
-      // Cancel reservation
       reservation.status = "cancelled";
       await reservation.save();
 
-      // Free up seat in the library
       await Library.findByIdAndUpdate(reservation.libraryId, {
         $inc: { availableSeats: 1 },
       });
@@ -124,12 +147,11 @@ exports.autoCancelUnpaidReservations = async () => {
   }
 };
 
-// Get all reservations for libraries owned by current admin
+//  Admin: Get all reservations for their libraries
 exports.getReservationsForAdmin = async (req, res) => {
   try {
     const adminId = req.user._id;
 
-    // Get all libraries owned by this admin
     const libraries = await Library.find({ adminId });
     const libraryIds = libraries.map((lib) => lib._id);
 
@@ -147,7 +169,7 @@ exports.getReservationsForAdmin = async (req, res) => {
   }
 };
 
-// Accept or Reject a reservation
+//  Admin: Accept or reject reservation
 exports.handleReservationDecision = async (req, res) => {
   const { id } = req.params;
   const { decision } = req.body;
@@ -185,7 +207,6 @@ exports.handleReservationDecision = async (req, res) => {
           .json({ error: "No seats available, reservation cancelled" });
       }
     } else if (decision === "reject") {
-      // ✅ Only refund seat if it was already marked paid or confirmed
       if (reservation.status === "confirmed") {
         const library = await Library.findById(reservation.libraryId);
         library.availableSeats += 1;
