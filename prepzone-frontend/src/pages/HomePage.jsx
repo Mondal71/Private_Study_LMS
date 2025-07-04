@@ -1,14 +1,22 @@
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import RoleSelector from "../components/RoleSelector";
-import homeImage from "../photo/homephoto.jpg"; 
+import homeImage from "../photo/homephoto.jpg";
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(null);
+  const roleRef = useRef(null);
 
   const isLoggedIn = !!localStorage.getItem("token");
+
+  const handleStep = (type) => {
+    setStep(type);
+    setTimeout(() => {
+      roleRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
 
   return (
     <>
@@ -44,13 +52,13 @@ export default function HomePage() {
             {!isLoggedIn && (
               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                 <button
-                  onClick={() => setStep("login")}
+                  onClick={() => handleStep("login")}
                   className="btn-primary w-32 border border-indigo-600 text-indigo-600 bg-white hover:bg-indigo-500"
                 >
                   Login
                 </button>
                 <button
-                  onClick={() => setStep("signup")}
+                  onClick={() => handleStep("signup")}
                   className="btn-primary w-32 border border-indigo-600 text-indigo-600 bg-white hover:bg-indigo-500"
                 >
                   Sign Up
@@ -60,7 +68,7 @@ export default function HomePage() {
 
             {/* Show RoleSelector only if step is set */}
             {!isLoggedIn && step && (
-              <div className="pt-6">
+              <div className="pt-6" ref={roleRef}>
                 <RoleSelector action={step} />
               </div>
             )}
