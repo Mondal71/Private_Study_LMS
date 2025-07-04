@@ -1,14 +1,13 @@
 const Library = require("../models/Library");
 
 // ✅ CREATE LIBRARY
-// ✅ CREATE LIBRARY
 exports.createLibrary = async (req, res) => {
   const {
     name,
     location,
     totalSeats,
     availableSeats,
-    amenities, // ✅ This should be amenities, not features
+    amenities, 
     phoneNumber,
     address,
     prices,
@@ -49,7 +48,7 @@ exports.createLibrary = async (req, res) => {
 };
 
 
-// ✅ GET ALL LIBRARIES by current ADMIN
+//  GET ALL LIBRARIES by current ADMIN
 exports.getMyLibraries = async (req, res) => {
   try {
     const adminId = req.user._id;
@@ -61,7 +60,7 @@ exports.getMyLibraries = async (req, res) => {
   }
 };
 
-// ✅ UPDATE LIBRARY
+//  UPDATE LIBRARY
 exports.updateLibrary = async (req, res) => {
   const libraryId = req.params.id;
   const {
@@ -92,7 +91,7 @@ exports.updateLibrary = async (req, res) => {
     library.phoneNumber = phoneNumber || library.phoneNumber;
     library.address = address || library.address;
 
-    // ✅ Update pricing if provided
+    //  Update pricing if provided
     if (prices) {
       library.prices = {
         sixHour: prices.sixHour ?? library.prices.sixHour,
@@ -109,7 +108,7 @@ exports.updateLibrary = async (req, res) => {
   }
 };
 
-// ✅ DELETE LIBRARY
+// DELETE LIBRARY
 exports.deleteLibrary = async (req, res) => {
   const libraryId = req.params.id;
 

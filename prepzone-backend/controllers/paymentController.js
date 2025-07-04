@@ -18,7 +18,7 @@ exports.createOrder = async (req, res) => {
 
     const order = await razorpay.orders.create(options);
 
-    // ✅ Send key to frontend
+    //  Send key to frontend
     res.json({
       success: true,
       order,

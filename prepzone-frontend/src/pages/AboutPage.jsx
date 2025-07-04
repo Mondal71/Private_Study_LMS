@@ -1,6 +1,6 @@
 import Navbar from "../components/Navbar";
-import founderImg from "../assets/founder.jpg"; // 👈 apna image yaha rakhna
-import studyImg from "../assets/study.jpg"; // 👈 koi library ya study related image bhi
+import founderImg from "../assets/founder.jpg"; 
+import studyImg from "../assets/study.jpg"; 
 
 export default function AboutPage() {
   return (

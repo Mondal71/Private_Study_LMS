@@ -6,7 +6,7 @@ import Navbar from "../../components/Navbar";
 export default function UserVerifyOTP() {
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
-  const email = localStorage.getItem("tempUserEmail"); // ✅ changed from phone
+  const email = localStorage.getItem("tempUserEmail"); 
 
   useEffect(() => {
     console.log("UserVerifyOTP page loaded");
@@ -14,7 +14,7 @@ export default function UserVerifyOTP() {
 
   const handleVerify = async () => {
     try {
-      const res = await API.post("/user/verify", { email, otp }); // ✅ changed from phone
+      const res = await API.post("/user/verify", { email, otp }); 
       console.log("Response:", res.data);
       if (res.data.message === "User verified successfully") {
         navigate("/user/set-password");

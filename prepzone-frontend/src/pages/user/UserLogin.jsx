@@ -5,7 +5,7 @@ import Navbar from "../../components/Navbar";
 import { Link } from "react-router-dom";
 
 export default function UserLogin() {
-  const [email, setEmail] = useState(""); // ✅ changed from phone to email
+  const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -15,7 +15,7 @@ export default function UserLogin() {
     }
 
     try {
-      const res = await API.post("/user/login", { email, password }); //  use email
+      const res = await API.post("/user/login", { email, password }); 
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);

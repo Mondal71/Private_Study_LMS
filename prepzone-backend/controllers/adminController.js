@@ -3,11 +3,11 @@ const Admin = require("../models/Admin");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 
-// ✅ Generate 6-digit OTP
+// Generate 6-digit OTP
 const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
-// ✅ Send OTP to email
+// Send OTP to email
 const sendEmailOTP = async (email, otp) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -27,7 +27,7 @@ const sendEmailOTP = async (email, otp) => {
   await transporter.sendMail(mailOptions);
 };
 
-// =================== SEND OTP ===================
+// SEND OTP 
 exports.sendOTP = async (req, res) => {
   const { name, email } = req.body;
 
@@ -37,7 +37,7 @@ exports.sendOTP = async (req, res) => {
     const otp = generateOTP();
 
     if (!admin) {
-      // ✅ FIXED: Include otpCreatedAt here
+      // FIXED: Include otpCreatedAt here
       admin = new Admin({ name, email, otp, otpCreatedAt: Date.now() });
     } else {
       admin.otp = otp;
@@ -59,7 +59,7 @@ exports.sendOTP = async (req, res) => {
   }
 };
 
-// =================== VERIFY OTP ===================
+//  VERIFY OTP 
 exports.verifyOTP = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -70,12 +70,12 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).json({ error: "Admin not found" });
     }
 
-    // ✅ Check if OTP matches latest one
+    // Check if OTP matches latest one
     if (!admin.otp || admin.otp !== otp) {
       return res.status(400).json({ error: "Invalid OTP" });
     }
 
-    // ✅ Check if OTP expired (5 mins)
+    // Check if OTP expired (5 mins)
     const isExpired =
       Date.now() - new Date(admin.otpCreatedAt).getTime() > 5 * 60 * 1000;
     if (isExpired) {
@@ -84,7 +84,7 @@ exports.verifyOTP = async (req, res) => {
         .json({ error: "OTP expired. Please request a new one." });
     }
 
-    // ✅ All OK: Mark verified, clear OTP and timestamp
+    // All OK: Mark verified, clear OTP and timestamp
     admin.isVerified = true;
     admin.otp = "";
     admin.otpCreatedAt = null;
@@ -100,7 +100,7 @@ exports.verifyOTP = async (req, res) => {
     res.status(500).json({ error: "OTP verification failed" });
   }
 };
-// =================== SET PASSWORD ===================
+//  SET PASSWORD
 exports.setPassword = async (req, res) => {
   const { email, password } = req.body;
 
@@ -124,7 +124,7 @@ exports.setPassword = async (req, res) => {
   }
 };
 
-// =================== LOGIN ===================
+//  LOGIN
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -168,7 +168,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// =================== FORGOT PASSWORD - Send OTP ===================
+//  FORGOT PASSWORD - Send OTP
 exports.sendForgotOTP = async (req, res) => {
   const { email } = req.body;
 
@@ -192,7 +192,7 @@ exports.sendForgotOTP = async (req, res) => {
   }
 };
 
-// =================== FORGOT PASSWORD - Verify OTP ===================
+// FORGOT PASSWORD - Verify OTP
 exports.verifyForgotOTP = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -218,7 +218,7 @@ exports.verifyForgotOTP = async (req, res) => {
   }
 };
 
-// =================== FORGOT PASSWORD - Reset Password ===================
+// FORGOT PASSWORD - Reset Password
 exports.resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
 

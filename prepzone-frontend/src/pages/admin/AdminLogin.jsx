@@ -5,18 +5,18 @@ import Navbar from "../../components/Navbar";
 import { Link } from "react-router-dom";
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState(""); // ✅ CHANGED
+  const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
-      const res = await API.post("/admin/login", { email, password }); // ✅ CHANGED
+      const res = await API.post("/admin/login", { email, password }); 
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", "admin");
-        localStorage.setItem("adminName", res.data.user.name); // ✅ KEEP
+        localStorage.setItem("adminName", res.data.user.name); 
         alert("Login successful!");
         navigate("/admin/dashboard");
       }

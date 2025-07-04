@@ -18,7 +18,7 @@ exports.bookSeat = async (req, res) => {
       return res.status(400).json({ error: "Invalid duration" });
     }
 
-    // ✅ Fix for accessing price
+    //  Fix for accessing price
     let price;
     if (duration === "6hr") price = library.prices.sixHour;
     else if (duration === "12hr") price = library.prices.twelveHour;
@@ -140,7 +140,7 @@ exports.autoCancelUnpaidReservations = async () => {
     }
 
     console.log(
-      `✅ Auto-cancel check completed at ${new Date().toLocaleString()}`
+      `Auto-cancel check completed at ${new Date().toLocaleString()}`
     );
   } catch (error) {
     console.error("Auto-cancel error:", error.message);

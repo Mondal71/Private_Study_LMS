@@ -5,7 +5,7 @@ import API from "../services/api";
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-  const { role } = useParams(); // ✅ Use only useParams
+  const { role } = useParams(); //  Use only useParams
 
   const handleSendOTP = async () => {
     try {

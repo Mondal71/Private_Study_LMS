@@ -174,7 +174,7 @@ export default function EditLibraryForm() {
             className="input w-full mb-4"
           />
 
-          {/* ✅ Pricing fields */}
+          {/*Pricing fields */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <input
               type="number"

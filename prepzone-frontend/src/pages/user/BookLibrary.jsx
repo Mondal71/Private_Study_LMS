@@ -8,7 +8,7 @@ export default function BookLibrary() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [paymentMode, setPaymentMode] = useState("online");
-  const [duration, setDuration] = useState("6hr"); // ✅ Default duration
+  const [duration, setDuration] = useState("6hr"); // Default duration
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -21,7 +21,7 @@ export default function BookLibrary() {
     try {
       const res = await API.post(
         `/reservations/book/${id}`,
-        { aadhar, email, phoneNumber: phone, paymentMode, duration }, // ✅ Include duration
+        { aadhar, email, phoneNumber: phone, paymentMode, duration }, 
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -71,7 +71,7 @@ export default function BookLibrary() {
             className="input w-full mb-4"
           />
 
-          {/* ✅ Duration Selection */}
+          {/* Duration Selection */}
           <div className="mb-4">
             <label className="block font-medium text-gray-700 mb-2">
               Duration

@@ -122,7 +122,7 @@ export default function AddLibraryForm() {
             className="input w-full mb-6"
           />
 
-          {/* ✅ Pricing Inputs */}
+          {/* Pricing Inputs */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <input
               type="number"

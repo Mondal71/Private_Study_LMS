@@ -11,10 +11,10 @@ const {
 
 const { verifyToken } = require("../middleware/auth");
 
-// ✅ Public Route
+//  Public Route
 router.get("/all", getAllLibraries);
 
-// ✅ Admin Routes
+//  Admin Routes
 router.post("/admin/library", verifyToken, createLibrary);
 router.get("/admin/my-libraries", verifyToken, getMyLibraries);
 router.put("/admin/library/:id", verifyToken, updateLibrary);

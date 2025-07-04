@@ -3,11 +3,11 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
-// ✅ OTP generator
+// OTP generator
 const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
-// ✅ Email sender without separate utils file
+// Email sender without separate utils file
 const sendEmailOTP = async (email, otp, name) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -27,7 +27,7 @@ const sendEmailOTP = async (email, otp, name) => {
   await transporter.sendMail(mailOptions);
 };
 
-// ✅ Send OTP
+// Send OTP
 exports.sendOTP = async (req, res) => {
   const { name, email } = req.body;
 
@@ -58,7 +58,7 @@ exports.sendOTP = async (req, res) => {
   }
 };
 
-// ✅ Verify OTP
+//  Verify OTP
 exports.verifyOTP = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -94,7 +94,7 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
-// ✅ Set Password
+// Set Password
 exports.setPassword = async (req, res) => {
   const { email, password } = req.body;
 
@@ -118,7 +118,7 @@ exports.setPassword = async (req, res) => {
   }
 };
 
-// ✅ Login
+//  Login
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 

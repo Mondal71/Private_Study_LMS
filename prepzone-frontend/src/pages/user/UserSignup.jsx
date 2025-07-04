@@ -5,7 +5,7 @@ import Navbar from "../../components/Navbar";
 
 export default function UserSignup() {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState(""); // ✅ updated from phone
+  const [email, setEmail] = useState(""); 
   const navigate = useNavigate();
 
   const handleSignup = async () => {
@@ -14,9 +14,9 @@ export default function UserSignup() {
     }
 
     try {
-      const res = await API.post("/user/signup", { name, email }); // ✅ use email
+      const res = await API.post("/user/signup", { name, email }); 
       if (res.data.message === "OTP sent to email successfully") {
-        localStorage.setItem("tempUserEmail", email); // ✅ store email instead of phone
+        localStorage.setItem("tempUserEmail", email); 
         navigate("/user/verify");
       }
     } catch (err) {

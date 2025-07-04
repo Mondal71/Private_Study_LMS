@@ -77,7 +77,7 @@ export default function Dashboard() {
                     : "N/A"}
                 </p>
 
-                {/* 💰 Price Section */}
+                {/* Price Section */}
                 <div className="text-sm text-gray-700 mt-3 space-y-1">
                   <p>
                     <strong>Price (6hr):</strong> ₹

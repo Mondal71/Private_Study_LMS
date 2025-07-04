@@ -93,7 +93,7 @@ export default function AdminDashboard() {
                 </p>
                 <p className="text-gray-600">Address: {lib.address || "--"}</p>
 
-                {/* ✅ Pricing Section */}
+                {/* Pricing Section */}
                 <div className="mt-3 text-sm text-gray-800 space-y-1">
                   <p>
                     <strong>Price (6hr):</strong> ₹

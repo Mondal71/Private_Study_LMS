@@ -108,7 +108,7 @@ export default function MyBookings() {
                   {new Date(res.createdAt).toLocaleString()}
                 </p>
 
-                {/* ✅ CONDITIONAL BUTTON */}
+                {/* CONDITIONAL BUTTON */}
                 {res.status === "pending" && (
                   <button
                     onClick={() => handleCancel(res._id)}

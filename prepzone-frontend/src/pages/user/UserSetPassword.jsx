@@ -7,7 +7,7 @@ export default function UserSetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const navigate = useNavigate();
-  const email = localStorage.getItem("tempUserEmail"); // ✅ use email instead of phone
+  const email = localStorage.getItem("tempUserEmail"); 
 
   const handleSetPassword = async () => {
     if (!email) {
@@ -27,12 +27,12 @@ export default function UserSetPassword() {
     }
 
     try {
-      const res = await API.post("/user/set-password", { email, password }); // ✅ send email instead of phone
+      const res = await API.post("/user/set-password", { email, password }); 
       if (
         res.data.success ||
         res.data.message === "Password set successfully"
       ) {
-        localStorage.removeItem("tempUserEmail"); // ✅ cleanup email key
+        localStorage.removeItem("tempUserEmail"); 
         alert("Password set successfully! You can now login.");
         navigate("/user/login");
       }

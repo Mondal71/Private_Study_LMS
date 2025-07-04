@@ -7,7 +7,7 @@ export default function AdminSetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const navigate = useNavigate();
-  const email = localStorage.getItem("tempAdminEmail"); // ✅ CHANGED
+  const email = localStorage.getItem("tempAdminEmail"); 
 
   const handleSetPassword = async () => {
     if (!email) {
@@ -27,9 +27,9 @@ export default function AdminSetPassword() {
     }
 
     try {
-      const res = await API.post("/admin/set-password", { email, password }); // ✅ CHANGED
+      const res = await API.post("/admin/set-password", { email, password }); 
       if (res.data.message === "Password set successfully") {
-        localStorage.removeItem("tempAdminEmail"); // ✅ CHANGED
+        localStorage.removeItem("tempAdminEmail"); 
         alert("Password set! Please login.");
         navigate("/admin/login");
       }

@@ -29,14 +29,14 @@ app.use("/api/payment", paymentIntregation);
 
 // Health check route
 app.get("/", (req, res) => {
-  res.send("PrepZone Server Running 🚀");
+  res.send("PrepZone Server Running ");
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Server started on port ${PORT}`);
+  console.log(`Server started on port ${PORT}`);
 });
 
 // Start background cron jobs
-require("./cronJobs"); // ⏱ Auto-cancel unpaid offline bookings
+require("./cronJobs"); //  Auto-cancel unpaid offline bookings
