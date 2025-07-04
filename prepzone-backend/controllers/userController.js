@@ -9,23 +9,29 @@ const generateOTP = () =>
 
 // Email sender without separate utils file
 const sendEmailOTP = async (email, otp, name) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS,
-    },
-  });
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
 
-  const mailOptions = {
-    from: process.env.MAIL_USER,
-    to: email,
-    subject: "Your PrepZone OTP",
-    text: `Hi ${name}, your OTP for PrepZone verification is: ${otp}`,
-  };
+    const mailOptions = {
+      from: process.env.MAIL_USER,
+      to: email,
+      subject: "Your PrepZone OTP",
+      text: `Hi ${name}, your OTP for PrepZone verification is: ${otp}`,
+    };
 
-  await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
+  } catch (err) {
+    console.error("Mail Error:", err);
+    throw new Error("Mail sending failed");
+  }
 };
+
 
 // Send OTP
 exports.sendOTP = async (req, res) => {
