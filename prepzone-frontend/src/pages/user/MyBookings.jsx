@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-import axios from "axios";
+import API from "../../services/api";
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
@@ -19,7 +19,7 @@ export default function MyBookings() {
 
   const fetchBookings = async (token) => {
     try {
-      const res = await axios.get("/api/reservations/my", {
+      const res = await API.get("/reservations/my", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBookings(res.data.reservations);
@@ -27,6 +27,7 @@ export default function MyBookings() {
       console.error("Error fetching bookings:", err.message);
     }
   };
+  
 
   const handleCancel = async (id) => {
     const confirmCancel = window.confirm(
@@ -36,12 +37,10 @@ export default function MyBookings() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
-        `/api/reservations/${id}/cancel`,
+      await API.put(
+        `/reservations/${id}/cancel`,
         {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("Booking cancelled successfully.");
       fetchBookings(token);
@@ -49,7 +48,7 @@ export default function MyBookings() {
       alert(err.response?.data?.error || "Cancellation failed.");
     }
   };
-
+  
   return (
     <>
       <Navbar />
