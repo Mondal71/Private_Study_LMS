@@ -27,7 +27,6 @@ export default function MyBookings() {
       console.error("Error fetching bookings:", err.message);
     }
   };
-  
 
   const handleCancel = async (id) => {
     const confirmCancel = window.confirm(
@@ -40,7 +39,9 @@ export default function MyBookings() {
       await API.put(
         `/reservations/${id}/cancel`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       alert("Booking cancelled successfully.");
       fetchBookings(token);
@@ -48,7 +49,7 @@ export default function MyBookings() {
       alert(err.response?.data?.error || "Cancellation failed.");
     }
   };
-  
+
   return (
     <>
       <Navbar />
@@ -107,7 +108,6 @@ export default function MyBookings() {
                   {new Date(res.createdAt).toLocaleString()}
                 </p>
 
-                {/* CONDITIONAL BUTTON */}
                 {res.status === "pending" && (
                   <button
                     onClick={() => handleCancel(res._id)}
