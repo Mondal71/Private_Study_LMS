@@ -17,7 +17,7 @@ export default function Navbar({ onSearch }) {
   };
 
   return (
-    <header className="bg-white shadow sticky top-0 z-50">
+    <header className="bg-white shadow sticky top-0 z-50 w-full">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
@@ -31,7 +31,7 @@ export default function Navbar({ onSearch }) {
           </h1>
         </Link>
 
-        {/* Searchbar visible only in dashboard */}
+        {/* Search (desktop only) */}
         {showSearch && (
           <input
             type="text"
@@ -93,11 +93,14 @@ export default function Navbar({ onSearch }) {
           )}
         </nav>
 
-        {/* Hamburger for mobile */}
+        {/* Hamburger Icon - Mobile */}
         <div className="md:hidden">
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            className="text-gray-700 focus:outline-none"
+          >
             <svg
-              className="w-6 h-6 text-gray-700"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -106,14 +109,14 @@ export default function Navbar({ onSearch }) {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
+                  strokeWidth={2}
                   d="M6 18L18 6M6 6l12 12"
                 />
               ) : (
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
+                  strokeWidth={2}
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               )}
@@ -122,9 +125,9 @@ export default function Navbar({ onSearch }) {
         </div>
       </div>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white px-6 pb-4 space-y-3 border-t">
+        <div className="md:hidden px-6 pb-4 space-y-3 bg-white border-t border-gray-200">
           {showSearch && (
             <input
               type="text"
