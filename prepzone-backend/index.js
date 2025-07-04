@@ -2,25 +2,32 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+
 dotenv.config();
+connectDB();
 
 const userRoutes = require("./routes/userRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const libraryRoutes = require("./routes/libraryRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
-
 const paymentIntregation = require("./routes/paymentRoutes");
 
-
-
-connectDB();
-
 const app = express();
-app.use(cors());
+
+// ✅ CORS setup with frontend URL
+app.use(
+  cors({
+    origin: "https://private-study-lms-frontend.onrender.com",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// Routes
+// Static files
 app.use("/uploads", express.static("uploads"));
+
+// API routes
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/libraries", libraryRoutes);
@@ -29,7 +36,7 @@ app.use("/api/payment", paymentIntregation);
 
 // Health check route
 app.get("/", (req, res) => {
-  res.send("PrepZone Server Running ");
+  res.send("PrepZone Server Running");
 });
 
 // Start server
@@ -38,5 +45,5 @@ app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
 
-// Start background cron jobs
-require("./cronJobs"); //  Auto-cancel unpaid offline bookings
+// Background cron jobs
+require("./cronJobs");
