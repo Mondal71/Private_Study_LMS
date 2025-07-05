@@ -5,8 +5,7 @@ import Navbar from "../../components/Navbar";
 import { Link } from "react-router-dom";
 
 export default function UserLogin() {
-  localStorage.setItem("token", res.data.token);
-  const [email, setEmail] = useState(""); 
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -16,10 +15,10 @@ export default function UserLogin() {
     }
 
     try {
-      const res = await API.post("/user/login", { email, password }); 
+      const res = await API.post("/user/login", { email, password });
 
       if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("token", res.data.token); 
         localStorage.setItem("role", "user");
         alert("Login successful!");
         navigate("/user/dashboard");
