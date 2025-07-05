@@ -18,7 +18,6 @@ export default function UserLogin() {
       const res = await API.post("/user/login", { email, password });
 
       if (res.data.token) {
-        localStorage.setItem("token", res.data.token); 
         localStorage.setItem("role", "user");
         alert("Login successful!");
         navigate("/user/dashboard");
