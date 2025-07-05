@@ -5,6 +5,12 @@ const Library = require("../models/Library");
 exports.createCashfreeOrder = async (req, res) => {
   try {
     const { amount, email, phone, name } = req.body;
+    console.log("Received payment request with:", {
+      amount,
+      email,
+      phone,
+      name,
+    }); 
 
     const response = await axios.post(
       "https://sandbox.cashfree.com/pg/orders",

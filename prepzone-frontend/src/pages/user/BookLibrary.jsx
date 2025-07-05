@@ -22,6 +22,7 @@ export default function BookLibrary() {
   }, []);
 
   const handleBook = async () => {
+    console.log("Token being sent:", localStorage.getItem("token"));
     if (aadhar.length !== 12) {
       alert("Aadhar number must be 12 digits");
       return;

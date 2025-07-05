@@ -14,7 +14,7 @@ const paymentIntregation = require("./routes/paymentRoutes");
 
 const app = express();
 
-// ✅ CORS setup with frontend URL
+//  CORS setup with frontend URL
 app.use(
   cors({
     origin: "https://private-study-lms-frontend.onrender.com",

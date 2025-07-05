@@ -5,6 +5,7 @@ import Navbar from "../../components/Navbar";
 import { Link } from "react-router-dom";
 
 export default function UserLogin() {
+  localStorage.setItem("token", res.data.token);
   const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
