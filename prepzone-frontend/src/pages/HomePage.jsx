@@ -25,7 +25,7 @@ export default function HomePage() {
       {/* Welcome Line */}
       <div className="border-t-2 border-indigo-600 text-center py-4">
         <h2 className="text-4xl sm:text-6xl font-bold text-indigo-700 animate-pulse tracking-wide">
-          — Welcome to PrepZone —
+          Welcome to PrepZone
         </h2>
       </div>
 
