@@ -18,11 +18,16 @@ export default function BookLibrary() {
     const script = document.createElement("script");
     script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js";
     script.async = true;
+    script.onload = () => {
+      console.log("✅ Cashfree SDK Loaded");
+    };
     document.body.appendChild(script);
   }, []);
 
   const handleBook = async () => {
-    console.log("Token being sent:", localStorage.getItem("token"));
+    const token = localStorage.getItem("token");
+    console.log("Token being sent:", token);
+
     if (aadhar.length !== 12) {
       alert("Aadhar number must be 12 digits");
       return;
@@ -40,12 +45,12 @@ export default function BookLibrary() {
 
     if (paymentMode === "offline") {
       try {
-        const res = await API.post(
+        await API.post(
           `/reservations/book/${id}`,
           { aadhar, email, phoneNumber: phone, paymentMode, duration },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -62,7 +67,7 @@ export default function BookLibrary() {
     try {
       const libRes = await API.get(`/libraries/all`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -81,7 +86,6 @@ export default function BookLibrary() {
         return;
       }
 
-      //  Call backend to get payment session
       const orderRes = await API.post(
         "/payment/cashfree/create-order",
         {
@@ -92,16 +96,15 @@ export default function BookLibrary() {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       const { paymentSessionId } = orderRes.data;
 
-      //  Launch Cashfree UI payment flow
-      const cashfree = new window.Cashfree();
-      cashfree.initialiseDropin({
+      // ✅ Use initDropin instead of new Cashfree()
+      window.Cashfree.initDropin({
         paymentSessionId,
         redirect: false,
         container: "cashfree-dropin",
@@ -110,7 +113,7 @@ export default function BookLibrary() {
           color: "#1e293b",
         },
         onSuccess: async (data) => {
-          alert("Payment successful ");
+          alert("Payment successful");
           await API.post(
             `/reservations/book/${id}`,
             {
@@ -122,14 +125,14 @@ export default function BookLibrary() {
             },
             {
               headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                Authorization: `Bearer ${token}`,
               },
             }
           );
           navigate("/user/my-bookings");
         },
         onFailure: (data) => {
-          alert("Payment failed ");
+          alert("Payment failed");
         },
       });
     } catch (err) {
