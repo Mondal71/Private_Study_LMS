@@ -19,6 +19,8 @@ import LibraryReservations from "./pages/admin/LibraryReservations";
 import ForgotPassword from "./components/ForgotPassword";
 import VerifyForgotOTP from "./components/VerifyForgotOTP";
 import SetNewPassword from "./components/SetNewPassword";
+import RefundPolicy from "./pages/RefundPolicy";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 
 
@@ -49,6 +51,8 @@ export default function App() {
         <Route path="/:role/forgot" element={<ForgotPassword />} />
         <Route path="/:role/forgot/verify" element={<VerifyForgotOTP />} />
         <Route path="/:role/forgot/new-password" element={<SetNewPassword />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       </Routes>
     </Router>
   );

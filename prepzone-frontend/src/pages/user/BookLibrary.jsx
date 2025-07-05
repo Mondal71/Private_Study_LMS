@@ -1,3 +1,5 @@
+// BookLibrary.jsx (Final Razorpay Integration Version)
+
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../../services/api";
@@ -8,7 +10,7 @@ export default function BookLibrary() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [paymentMode, setPaymentMode] = useState("online");
-  const [duration, setDuration] = useState("6hr"); // Default duration
+  const [duration, setDuration] = useState("6hr");
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -18,25 +20,108 @@ export default function BookLibrary() {
       return;
     }
 
-    try {
-      const res = await API.post(
-        `/reservations/book/${id}`,
-        { aadhar, email, phoneNumber: phone, paymentMode, duration }, 
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (res.data.success) {
+    if (paymentMode === "offline") {
+      try {
+        const res = await API.post(
+          `/reservations/book/${id}`,
+          { aadhar, email, phoneNumber: phone, paymentMode, duration },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         alert("Booking successful!");
         navigate("/user/my-bookings");
-      } else {
-        alert(res.data.error || "Booking failed");
+      } catch (err) {
+        alert(err.response?.data?.error || "Booking failed");
       }
+      return;
+    }
+
+    try {
+      const libRes = await API.get(`/libraries/all`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const selectedLibrary = libRes.data.libraries.find(
+        (lib) => lib._id === id
+      );
+      const amount =
+        duration === "6hr"
+          ? selectedLibrary.prices.sixHour
+          : duration === "12hr"
+          ? selectedLibrary.prices.twelveHour
+          : selectedLibrary.prices.twentyFourHour;
+
+      if (!amount) {
+        alert("Invalid pricing or duration.");
+        return;
+      }
+
+      const orderRes = await API.post("/payment/create-order", { amount });
+      const { key, order } = orderRes.data;
+
+      const options = {
+        key,
+        amount: order.amount,
+        currency: "INR",
+        name: "PrepZone",
+        description: "Library Seat Booking",
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            const verifyRes = await API.post(
+              "/payment/verify-payment",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                reservationDetails: {
+                  libraryId: id,
+                  aadhar,
+                  email,
+                  phoneNumber: phone,
+                  paymentMode: "online",
+                  duration,
+                },
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+
+            if (verifyRes.data.success) {
+              alert(
+                verifyRes.data.message || "Payment & Booking successful ✅"
+              );
+              navigate("/user/my-bookings");
+            } else {
+              alert("Payment verification failed");
+            }
+          } catch (err) {
+            alert(err.response?.data?.message || "Booking/payment failed");
+          }
+        },
+        prefill: {
+          name: "PrepZone User",
+          email,
+          contact: phone,
+        },
+        theme: {
+          color: "#6366f1",
+        },
+      };
+
+      const razor = new window.Razorpay(options);
+      razor.open();
     } catch (err) {
-      alert(err.response?.data?.error || "Booking failed");
+      console.error(err);
+      alert("Something went wrong during payment.");
     }
   };
 
@@ -71,7 +156,6 @@ export default function BookLibrary() {
             className="input w-full mb-4"
           />
 
-          {/* Duration Selection */}
           <div className="mb-4">
             <label className="block font-medium text-gray-700 mb-2">
               Duration
@@ -103,9 +187,8 @@ export default function BookLibrary() {
 
           <div className="bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg text-sm mb-6">
             <strong>Note:</strong> Please bring your original{" "}
-            <strong>Aadhar card</strong>, an aadhar card <strong>photo copy</strong>, and a{" "}
-            <strong>passport-size photo</strong> with you when visiting the
-            library.
+            <strong>Aadhar card</strong>, a<strong> photocopy</strong>, and a{" "}
+            <strong>passport-size photo</strong> when visiting.
           </div>
 
           <button onClick={handleBook} className="btn-primary w-full">

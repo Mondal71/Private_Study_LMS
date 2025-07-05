@@ -179,6 +179,12 @@ export default function Navbar({ onSearch }) {
               Admin Panel
             </Link>
           )}
+          <Link
+            to="/refund-policy"
+            className="text-gray-600 hover:text-indigo-600 text-sm"
+          >
+            Refund Policy
+          </Link>
 
           {!isLoggedIn ? (
             <Link
