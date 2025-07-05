@@ -1,6 +1,4 @@
-// BookLibrary.jsx (Final Razorpay Integration Version)
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../../services/api";
 import Navbar from "../../components/Navbar";
@@ -11,15 +9,36 @@ export default function BookLibrary() {
   const [phone, setPhone] = useState("");
   const [paymentMode, setPaymentMode] = useState("online");
   const [duration, setDuration] = useState("6hr");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
   const handleBook = async () => {
+    // Basic validations
     if (aadhar.length !== 12) {
       alert("Aadhar number must be 12 digits");
       return;
     }
+    if (!email.includes("@")) {
+      alert("Enter valid email");
+      return;
+    }
+    if (phone.length < 10) {
+      alert("Enter valid phone number");
+      return;
+    }
 
+    setLoading(true);
+
+    // Offline Booking Flow
     if (paymentMode === "offline") {
       try {
         const res = await API.post(
@@ -35,10 +54,13 @@ export default function BookLibrary() {
         navigate("/user/my-bookings");
       } catch (err) {
         alert(err.response?.data?.error || "Booking failed");
+      } finally {
+        setLoading(false);
       }
       return;
     }
 
+    // Online Booking Flow
     try {
       const libRes = await API.get(`/libraries/all`, {
         headers: {
@@ -95,7 +117,12 @@ export default function BookLibrary() {
               }
             );
 
-            if (verifyRes.data.success) {
+            if (verifyRes.data.refundRequired) {
+              alert(
+                "Seat not available. Payment will be refunded automatically."
+              );
+              navigate("/user/my-bookings");
+            } else if (verifyRes.data.success) {
               alert(
                 verifyRes.data.message || "Payment & Booking successful ✅"
               );
@@ -122,6 +149,8 @@ export default function BookLibrary() {
     } catch (err) {
       console.error(err);
       alert("Something went wrong during payment.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -187,12 +216,16 @@ export default function BookLibrary() {
 
           <div className="bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg text-sm mb-6">
             <strong>Note:</strong> Please bring your original{" "}
-            <strong>Aadhar card</strong>, a<strong> photocopy</strong>, and a{" "}
+            <strong>Aadhar card</strong>, a <strong>photocopy</strong>, and a{" "}
             <strong>passport-size photo</strong> when visiting.
           </div>
 
-          <button onClick={handleBook} className="btn-primary w-full">
-            Book Now
+          <button
+            onClick={handleBook}
+            className="btn-primary w-full"
+            disabled={loading}
+          >
+            {loading ? "Processing..." : "Book Now"}
           </button>
         </div>
       </div>

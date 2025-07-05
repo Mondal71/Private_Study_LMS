@@ -1,4 +1,4 @@
-// ✅ paymentController.js
+// ✅ Final paymentController.js (with refund-safe and duplicate prevention)
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Reservation = require("../models/Reservation");
@@ -18,19 +18,13 @@ exports.createOrder = async (req, res) => {
       receipt: `order_rcptid_${Date.now()}`,
     };
     const order = await razorpay.orders.create(options);
-    res.json({
-      success: true,
-      order,
-      key: process.env.RAZORPAY_KEY_ID,
-    });
+    res.json({ success: true, order, key: process.env.RAZORPAY_KEY_ID });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Order creation failed",
-        error: err.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Order creation failed",
+      error: err.message,
+    });
   }
 };
 
@@ -49,9 +43,10 @@ exports.verifyPayment = async (req, res) => {
     .digest("hex");
 
   if (expectedSignature !== razorpay_signature) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Signature mismatch" });
+    return res.status(400).json({
+      success: false,
+      message: "Signature mismatch",
+    });
   }
 
   try {
@@ -59,16 +54,32 @@ exports.verifyPayment = async (req, res) => {
       reservationDetails;
 
     const library = await Library.findById(libraryId);
-    if (!library)
+    if (!library) {
       return res
         .status(404)
         .json({ success: false, message: "Library not found" });
+    }
 
     if (library.availableSeats < 1) {
       return res.status(409).json({
         success: false,
         message: "Seat not available. Initiating refund...",
         refundRequired: true,
+      });
+    }
+
+    // ✅ Avoid duplicate reservations
+    const existing = await Reservation.findOne({
+      user: req.user.id,
+      libraryId,
+      isPaid: true,
+      duration,
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "Reservation already exists.",
       });
     }
 
@@ -93,9 +104,11 @@ exports.verifyPayment = async (req, res) => {
       reservation,
     });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error", error: err.message });
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
   }
 };
 
@@ -104,9 +117,8 @@ exports.refundPayment = async (req, res) => {
 
   try {
     const refund = await razorpay.payments.refund(paymentId, {
-      speed: "optimum", // or "instant" if enabled on your account
+      speed: "optimum",
     });
-
     res.json({
       success: true,
       message: "Refund initiated successfully",
@@ -120,4 +132,3 @@ exports.refundPayment = async (req, res) => {
     });
   }
 };
-
