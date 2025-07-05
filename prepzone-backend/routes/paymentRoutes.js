@@ -1,19 +1,19 @@
 const express = require("express");
 const router = express.Router();
 const {
-  createOrder,
-  verifyPayment,
+  createCashfreeOrder,
+  bookLibraryAfterPayment,
   refundPayment,
 } = require("../controllers/paymentController");
-const authMiddleware = require("../middleware/authMiddleware");
+const { verifyToken } = require("../middleware/auth");
 
 //  Create a payment order (Cashfree)
-router.post("/cashfree/create-order", authMiddleware, createOrder);
+router.post("/cashfree/create-order", verifyToken, createCashfreeOrder);
 
-//  Verify payment after success
-router.post("/cashfree/verify-payment", authMiddleware, verifyPayment);
+//  Confirm booking after payment success
+router.post("/cashfree/verify-payment", verifyToken, bookLibraryAfterPayment);
 
-//  Refund payment if something goes wrong
-router.post("/cashfree/refund", authMiddleware, refundPayment);
+//  Refund if needed
+router.post("/cashfree/refund", verifyToken, refundPayment);
 
 module.exports = router;
