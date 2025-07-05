@@ -40,14 +40,12 @@ export default function BookLibrary() {
       return;
     }
 
-    // Input validation
     if (aadhar.length !== 12) return alert("Aadhar must be 12 digits.");
     if (!email.includes("@")) return alert("Enter valid email.");
     if (phone.length < 10) return alert("Enter valid phone number.");
 
     setLoading(true);
 
-    // ✅ Offline Booking
     if (paymentMode === "offline") {
       try {
         await API.post(
@@ -69,7 +67,6 @@ export default function BookLibrary() {
       return;
     }
 
-    // ✅ Online Booking
     try {
       const libRes = await API.get(`/libraries/all`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -87,7 +84,6 @@ export default function BookLibrary() {
 
       if (!amount) return alert("Invalid pricing or duration.");
 
-      // Create payment order
       const orderRes = await API.post(
         "/payment/cashfree/create-order",
         {
@@ -105,16 +101,16 @@ export default function BookLibrary() {
 
       const { paymentSessionId } = orderRes.data;
 
-      // ✅ Check Cashfree SDK loaded
-      if (
-        typeof window.Cashfree === "undefined" ||
-        typeof window.Cashfree.init === "undefined"
-      ) {
-        alert("❌ Cashfree SDK not loaded. Try again later.");
+      // ✅ Await SDK loading before init
+      try {
+        await loadCashfreeSDK();
+      } catch (sdkError) {
+        alert(sdkError);
+        setLoading(false);
         return;
       }
 
-      // ✅ Launch Payment Dropin
+      // ✅ Now safe to use
       window.Cashfree.init({
         paymentSessionId,
         redirect: false,
@@ -151,6 +147,7 @@ export default function BookLibrary() {
       setLoading(false);
     }
   };
+  
 
   return (
     <>
