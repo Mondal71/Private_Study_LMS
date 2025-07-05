@@ -1,8 +1,8 @@
 // ✅ paymentController.js
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
-const Reservation = require("../models/reservationModel");
-const Library = require("../models/libraryModel");
+const Reservation = require("../models/Reservation");
+const Library = require("../models/Library");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
