@@ -1,74 +1,67 @@
-// ✅ Final paymentController.js (with refund-safe and duplicate prevention)
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
+const axios = require("axios");
 const Reservation = require("../models/Reservation");
 const Library = require("../models/Library");
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
-exports.createOrder = async (req, res) => {
+exports.createCashfreeOrder = async (req, res) => {
   try {
-    const { amount } = req.body;
-    const options = {
-      amount: amount * 100,
-      currency: "INR",
-      receipt: `order_rcptid_${Date.now()}`,
-    };
-    const order = await razorpay.orders.create(options);
-    res.json({ success: true, order, key: process.env.RAZORPAY_KEY_ID });
+    const { amount, email, phone, name } = req.body;
+
+    const response = await axios.post(
+      "https://sandbox.cashfree.com/pg/orders",
+      {
+        order_amount: amount,
+        order_currency: "INR",
+        customer_details: {
+          customer_id: "cust_" + Date.now(),
+          customer_email: email,
+          customer_phone: phone,
+          customer_name: name,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-version": "2022-09-01",
+          "x-client-id": process.env.CASHFREE_APP_ID,
+          "x-client-secret": process.env.CASHFREE_SECRET_KEY,
+        },
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      paymentSessionId: response.data.payment_session_id,
+    });
   } catch (err) {
+    console.error("Cashfree Order Error:", err.response?.data || err.message);
     res.status(500).json({
       success: false,
-      message: "Order creation failed",
-      error: err.message,
+      message: "Cashfree order creation failed",
     });
   }
 };
 
-exports.verifyPayment = async (req, res) => {
-  const {
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature,
-    reservationDetails,
-  } = req.body;
-
-  const sign = razorpay_order_id + "|" + razorpay_payment_id;
-  const expectedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-    .update(sign.toString())
-    .digest("hex");
-
-  if (expectedSignature !== razorpay_signature) {
-    return res.status(400).json({
-      success: false,
-      message: "Signature mismatch",
-    });
-  }
-
+// After successful payment (from onSuccess), confirm and reserve seat
+exports.bookLibraryAfterPayment = async (req, res) => {
   try {
     const { aadhar, email, phoneNumber, paymentMode, duration, libraryId } =
-      reservationDetails;
+      req.body;
 
     const library = await Library.findById(libraryId);
     if (!library) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Library not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Library not found",
+      });
     }
 
     if (library.availableSeats < 1) {
       return res.status(409).json({
         success: false,
-        message: "Seat not available. Initiating refund...",
-        refundRequired: true,
+        message: "No seats available. Please try another time.",
       });
     }
 
-    // ✅ Avoid duplicate reservations
     const existing = await Reservation.findOne({
       user: req.user.id,
       libraryId,
@@ -79,7 +72,7 @@ exports.verifyPayment = async (req, res) => {
     if (existing) {
       return res.status(409).json({
         success: false,
-        message: "Reservation already exists.",
+        message: "You already have a paid reservation for this duration.",
       });
     }
 
@@ -100,10 +93,11 @@ exports.verifyPayment = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Payment verified and seat booked ✅",
+      message: "Seat successfully booked after payment ✅",
       reservation,
     });
   } catch (err) {
+    console.error("Booking error:", err.message);
     return res.status(500).json({
       success: false,
       message: "Server error",
@@ -111,24 +105,38 @@ exports.verifyPayment = async (req, res) => {
     });
   }
 };
-
 exports.refundPayment = async (req, res) => {
   const { paymentId } = req.body;
 
   try {
-    const refund = await razorpay.payments.refund(paymentId, {
-      speed: "optimum",
-    });
-    res.json({
+    const response = await axios.post(
+      `https://sandbox.cashfree.com/pg/orders/${paymentId}/refunds`,
+      {
+        refund_amount: 100, //  Replace this with actual amount if needed
+        refund_id: "refund_" + Date.now(),
+        refund_note: "Library seat unavailable or user cancelled.",
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-version": "2022-09-01",
+          "x-client-id": process.env.CASHFREE_APP_ID,
+          "x-client-secret": process.env.CASHFREE_SECRET_KEY,
+        },
+      }
+    );
+
+    return res.status(200).json({
       success: true,
       message: "Refund initiated successfully",
-      refund,
+      refund: response.data,
     });
-  } catch (error) {
-    res.status(500).json({
+  } catch (err) {
+    console.error("Refund Error:", err.response?.data || err.message);
+    return res.status(500).json({
       success: false,
-      message: "Refund failed",
-      error: error.message,
+      message: "Refund initiation failed",
+      error: err.message,
     });
   }
 };

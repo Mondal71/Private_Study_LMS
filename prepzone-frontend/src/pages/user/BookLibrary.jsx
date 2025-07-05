@@ -13,16 +13,15 @@ export default function BookLibrary() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Load Razorpay script
+  // Load Cashfree Script
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js";
     script.async = true;
     document.body.appendChild(script);
   }, []);
 
   const handleBook = async () => {
-    // Basic validations
     if (aadhar.length !== 12) {
       alert("Aadhar number must be 12 digits");
       return;
@@ -38,7 +37,6 @@ export default function BookLibrary() {
 
     setLoading(true);
 
-    // Offline Booking Flow
     if (paymentMode === "offline") {
       try {
         const res = await API.post(
@@ -60,7 +58,6 @@ export default function BookLibrary() {
       return;
     }
 
-    // Online Booking Flow
     try {
       const libRes = await API.get(`/libraries/all`, {
         headers: {
@@ -83,69 +80,49 @@ export default function BookLibrary() {
         return;
       }
 
-      const orderRes = await API.post("/payment/create-order", { amount });
-      const { key, order } = orderRes.data;
+      //  Call backend to get payment session
+      const orderRes = await API.post("/payment/cashfree/create-order", {
+        amount,
+        email,
+        phone,
+        name: "PrepZone User",
+      });
 
-      const options = {
-        key,
-        amount: order.amount,
-        currency: "INR",
-        name: "PrepZone",
-        description: "Library Seat Booking",
-        order_id: order.id,
-        handler: async function (response) {
-          try {
-            const verifyRes = await API.post(
-              "/payment/verify-payment",
-              {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                reservationDetails: {
-                  libraryId: id,
-                  aadhar,
-                  email,
-                  phoneNumber: phone,
-                  paymentMode: "online",
-                  duration,
-                },
+      const { paymentSessionId } = orderRes.data;
+
+      //  Launch Cashfree UI payment flow
+      const cashfree = new window.Cashfree();
+      cashfree.initialiseDropin({
+        paymentSessionId,
+        redirect: false,
+        container: "cashfree-dropin",
+        style: {
+          backgroundColor: "#f9fafb",
+          color: "#1e293b",
+        },
+        onSuccess: async (data) => {
+          alert("Payment successful ");
+          await API.post(
+            `/reservations/book/${id}`,
+            {
+              aadhar,
+              email,
+              phoneNumber: phone,
+              paymentMode: "online",
+              duration,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              }
-            );
-
-            if (verifyRes.data.refundRequired) {
-              alert(
-                "Seat not available. Payment will be refunded automatically."
-              );
-              navigate("/user/my-bookings");
-            } else if (verifyRes.data.success) {
-              alert(
-                verifyRes.data.message || "Payment & Booking successful ✅"
-              );
-              navigate("/user/my-bookings");
-            } else {
-              alert("Payment verification failed");
             }
-          } catch (err) {
-            alert(err.response?.data?.message || "Booking/payment failed");
-          }
+          );
+          navigate("/user/my-bookings");
         },
-        prefill: {
-          name: "PrepZone User",
-          email,
-          contact: phone,
+        onFailure: (data) => {
+          alert("Payment failed ");
         },
-        theme: {
-          color: "#6366f1",
-        },
-      };
-
-      const razor = new window.Razorpay(options);
-      razor.open();
+      });
     } catch (err) {
       console.error(err);
       alert("Something went wrong during payment.");
@@ -227,6 +204,8 @@ export default function BookLibrary() {
           >
             {loading ? "Processing..." : "Book Now"}
           </button>
+
+          <div id="cashfree-dropin" className="mt-6" />
         </div>
       </div>
     </>

@@ -5,9 +5,15 @@ const {
   verifyPayment,
   refundPayment,
 } = require("../controllers/paymentController");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.post("/create-order", createOrder);
-router.post("/verify-payment", verifyPayment);
-router.post("/refund", refundPayment);
+//  Create a payment order (Cashfree)
+router.post("/cashfree/create-order", authMiddleware, createOrder);
+
+//  Verify payment after success
+router.post("/cashfree/verify-payment", authMiddleware, verifyPayment);
+
+//  Refund payment if something goes wrong
+router.post("/cashfree/refund", authMiddleware, refundPayment);
 
 module.exports = router;
