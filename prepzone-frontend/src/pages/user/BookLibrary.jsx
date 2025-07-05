@@ -18,14 +18,11 @@ export default function BookLibrary() {
     const script = document.createElement("script");
     script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js";
     script.async = true;
-    script.onload = () => {
-      console.log("✅ Cashfree SDK Loaded");
-    };
-    script.onerror = () => {
-      console.error("❌ Failed to load Cashfree SDK");
-    };
+    script.onload = () => console.log("✅ Cashfree SDK loaded");
+    script.onerror = () => console.error("❌ SDK load failed");
     document.body.appendChild(script);
   }, []);
+  
 
   const handleBook = async () => {
     const token = localStorage.getItem("token");
@@ -95,11 +92,11 @@ export default function BookLibrary() {
 
       const { paymentSessionId } = orderRes.data;
 
-      // ✅ Cashfree.init (correct method)
+      // after getting paymentSessionId
       if (window.Cashfree && typeof window.Cashfree.init === "function") {
         window.Cashfree.init({
           paymentSessionId,
-          redirectTarget: "_self",
+          redirect: false,
           onSuccess: async (data) => {
             alert("✅ Payment successful!");
 
@@ -113,19 +110,20 @@ export default function BookLibrary() {
                 duration,
               },
               {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
               }
             );
 
             navigate("/user/my-bookings");
           },
           onFailure: (data) => {
-            alert("❌ Payment failed!");
-            console.error(data);
+            alert("❌ Payment failed");
           },
         });
       } else {
-        alert("Cashfree SDK not loaded properly.");
+        alert("❌ Cashfree SDK not loaded properly.");
       }
     } catch (err) {
       console.error(err);
