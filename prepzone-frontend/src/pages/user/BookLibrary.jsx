@@ -13,40 +13,53 @@ export default function BookLibrary() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Load Cashfree Script
+  // ✅ Load Cashfree SDK only once
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js";
-    script.async = true;
-    script.onload = () => console.log("✅ Cashfree SDK loaded");
-    script.onerror = () => console.error("❌ SDK load failed");
-    document.body.appendChild(script);
+    const loadScript = () => {
+      const existingScript = document.getElementById("cashfree-sdk");
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js";
+        script.id = "cashfree-sdk";
+        script.async = true;
+        script.onload = () => console.log("✅ Cashfree SDK loaded");
+        script.onerror = () => alert("❌ Failed to load Cashfree SDK");
+        document.body.appendChild(script);
+      } else {
+        console.log("⚠️ Cashfree SDK already loaded");
+      }
+    };
+
+    loadScript();
   }, []);
-  
 
   const handleBook = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Login required.");
+      alert("Please login first.");
       return;
     }
 
-    if (aadhar.length !== 12) return alert("Aadhar must be 12 digits");
-    if (!email.includes("@")) return alert("Enter valid email");
-    if (phone.length < 10) return alert("Enter valid phone number");
+    // Input validation
+    if (aadhar.length !== 12) return alert("Aadhar must be 12 digits.");
+    if (!email.includes("@")) return alert("Enter valid email.");
+    if (phone.length < 10) return alert("Enter valid phone number.");
 
     setLoading(true);
 
+    // ✅ Offline Booking
     if (paymentMode === "offline") {
       try {
         await API.post(
           `/reservations/book/${id}`,
           { aadhar, email, phoneNumber: phone, paymentMode, duration },
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
-        alert("Booking successful (Offline)!");
+        alert("Booking successful!");
         navigate("/user/my-bookings");
       } catch (err) {
         alert(err.response?.data?.error || "Booking failed");
@@ -56,6 +69,7 @@ export default function BookLibrary() {
       return;
     }
 
+    // ✅ Online Booking
     try {
       const libRes = await API.get(`/libraries/all`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -64,7 +78,6 @@ export default function BookLibrary() {
       const selectedLibrary = libRes.data.libraries.find(
         (lib) => lib._id === id
       );
-
       const amount =
         duration === "6hr"
           ? selectedLibrary.prices.sixHour
@@ -72,11 +85,9 @@ export default function BookLibrary() {
           ? selectedLibrary.prices.twelveHour
           : selectedLibrary.prices.twentyFourHour;
 
-      if (!amount) {
-        alert("Invalid pricing or duration.");
-        return;
-      }
+      if (!amount) return alert("Invalid pricing or duration.");
 
+      // Create payment order
       const orderRes = await API.post(
         "/payment/cashfree/create-order",
         {
@@ -86,50 +97,56 @@ export default function BookLibrary() {
           name: "PrepZone User",
         },
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       const { paymentSessionId } = orderRes.data;
 
-      // after getting paymentSessionId
-      if (window.Cashfree && typeof window.Cashfree.init === "function") {
-        window.Cashfree.init({
-          paymentSessionId,
-          redirect: false,
-          onSuccess: async (data) => {
-            alert("✅ Payment successful!");
-
-            await API.post(
-              `/reservations/book/${id}`,
-              {
-                aadhar,
-                email,
-                phoneNumber: phone,
-                paymentMode: "online",
-                duration,
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-
-            navigate("/user/my-bookings");
-          },
-          onFailure: (data) => {
-            alert("❌ Payment failed");
-          },
-        });
-      } else {
-        alert("❌ Cashfree SDK not loaded properly.");
+      // ✅ Check Cashfree SDK loaded
+      if (
+        typeof window.Cashfree === "undefined" ||
+        typeof window.Cashfree.init === "undefined"
+      ) {
+        alert("❌ Cashfree SDK not loaded. Try again later.");
+        return;
       }
+
+      // ✅ Launch Payment Dropin
+      window.Cashfree.init({
+        paymentSessionId,
+        redirect: false,
+        container: "cashfree-dropin",
+        style: {
+          backgroundColor: "#f9fafb",
+          color: "#1e293b",
+        },
+        onSuccess: async () => {
+          alert("✅ Payment successful");
+          await API.post(
+            `/reservations/book/${id}`,
+            {
+              aadhar,
+              email,
+              phoneNumber: phone,
+              paymentMode: "online",
+              duration,
+            },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          navigate("/user/my-bookings");
+        },
+        onFailure: () => {
+          alert("❌ Payment failed");
+        },
+      });
     } catch (err) {
       console.error(err);
-      alert(
-        err.response?.data?.error || "Something went wrong during payment."
-      );
+      alert(err.response?.data?.error || "❌ Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -196,9 +213,9 @@ export default function BookLibrary() {
           </div>
 
           <div className="bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg text-sm mb-6">
-            <strong>Note:</strong> Please bring your original{" "}
-            <strong>Aadhar card</strong>, a <strong>photocopy</strong>, and a{" "}
-            <strong>passport-size photo</strong> when visiting.
+            <strong>Note:</strong> Bring original <strong>Aadhar</strong>, a
+            <strong> photocopy</strong>, and a{" "}
+            <strong>passport-size photo</strong>.
           </div>
 
           <button
@@ -209,7 +226,7 @@ export default function BookLibrary() {
             {loading ? "Processing..." : "Book Now"}
           </button>
 
-          {/* dropin is not needed when using init() */}
+          <div id="cashfree-dropin" className="mt-6" />
         </div>
       </div>
     </>
