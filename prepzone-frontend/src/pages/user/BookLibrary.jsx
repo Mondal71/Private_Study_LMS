@@ -82,12 +82,20 @@ export default function BookLibrary() {
       }
 
       //  Call backend to get payment session
-      const orderRes = await API.post("/payment/cashfree/create-order", {
-        amount,
-        email,
-        phone,
-        name: "PrepZone User",
-      });
+      const orderRes = await API.post(
+        "/payment/cashfree/create-order",
+        {
+          amount,
+          email,
+          phone,
+          name: "PrepZone User",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
       const { paymentSessionId } = orderRes.data;
 
