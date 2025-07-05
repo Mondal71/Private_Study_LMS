@@ -13,36 +13,30 @@ export default function BookLibrary() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // ✅ Load Cashfree SDK only once
-  useEffect(() => {
-    const loadScript = () => {
-      const existingScript = document.getElementById("cashfree-sdk");
-      if (!existingScript) {
-        const script = document.createElement("script");
-        script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js";
-        script.id = "cashfree-sdk";
-        script.async = true;
-        script.onload = () => console.log("✅ Cashfree SDK loaded");
-        script.onerror = () => alert("❌ Failed to load Cashfree SDK");
-        document.body.appendChild(script);
-      } else {
-        console.log("⚠️ Cashfree SDK already loaded");
-      }
-    };
+  const [sdkReady, setSdkReady] = useState(false);
 
-    loadScript();
+  // ✅ Load Cashfree SDK once
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://sandbox.cashfree.com/js/ui/checkout.js";
+    script.async = true;
+    script.onload = () => {
+      console.log("✅ Cashfree SDK loaded");
+      setSdkReady(true);
+    };
+    script.onerror = () => {
+      alert("❌ Cashfree SDK failed to load");
+    };
+    document.body.appendChild(script);
   }, []);
 
   const handleBook = async () => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Please login first.");
-      return;
-    }
+    if (!token) return alert("Please login first");
 
-    if (aadhar.length !== 12) return alert("Aadhar must be 12 digits.");
-    if (!email.includes("@")) return alert("Enter valid email.");
-    if (phone.length < 10) return alert("Enter valid phone number.");
+    if (aadhar.length !== 12) return alert("Aadhar must be 12 digits");
+    if (!email.includes("@")) return alert("Enter valid email");
+    if (phone.length < 10) return alert("Enter valid phone number");
 
     setLoading(true);
 
@@ -51,11 +45,7 @@ export default function BookLibrary() {
         await API.post(
           `/reservations/book/${id}`,
           { aadhar, email, phoneNumber: phone, paymentMode, duration },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         alert("Booking successful!");
         navigate("/user/my-bookings");
@@ -82,36 +72,22 @@ export default function BookLibrary() {
           ? selectedLibrary.prices.twelveHour
           : selectedLibrary.prices.twentyFourHour;
 
-      if (!amount) return alert("Invalid pricing or duration.");
+      if (!amount) return alert("Invalid pricing or duration");
 
       const orderRes = await API.post(
         "/payment/cashfree/create-order",
-        {
-          amount,
-          email,
-          phone,
-          name: "PrepZone User",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { amount, email, phone, name: "PrepZone User" },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const { paymentSessionId } = orderRes.data;
 
-      // ✅ Await SDK loading before init
-      try {
-        await loadCashfreeSDK();
-      } catch (sdkError) {
-        alert(sdkError);
-        setLoading(false);
+      if (!sdkReady || !window.Cashfree) {
+        alert("❌ Cashfree SDK not ready");
         return;
       }
 
-      // ✅ Now safe to use
-      window.Cashfree.init({
+      window.Cashfree.initDropin({
         paymentSessionId,
         redirect: false,
         container: "cashfree-dropin",
@@ -130,9 +106,7 @@ export default function BookLibrary() {
               paymentMode: "online",
               duration,
             },
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+            { headers: { Authorization: `Bearer ${token}` } }
           );
           navigate("/user/my-bookings");
         },
@@ -142,12 +116,11 @@ export default function BookLibrary() {
       });
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "❌ Something went wrong");
+      alert("Something went wrong during payment");
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <>
@@ -157,7 +130,6 @@ export default function BookLibrary() {
           <h2 className="text-2xl font-bold text-indigo-700 text-center mb-6">
             Book Your Seat
           </h2>
-
           <input
             type="text"
             placeholder="Aadhar Number"
@@ -179,40 +151,27 @@ export default function BookLibrary() {
             onChange={(e) => setPhone(e.target.value)}
             className="input w-full mb-4"
           />
-
-          <div className="mb-4">
-            <label className="block font-medium text-gray-700 mb-2">
-              Duration
-            </label>
-            <select
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              className="input w-full"
-            >
-              <option value="6hr">6 Hours</option>
-              <option value="12hr">12 Hours</option>
-              <option value="24hr">24 Hours</option>
-            </select>
-          </div>
-
-          <div className="mb-6">
-            <label className="block font-medium text-gray-700 mb-2">
-              Payment Mode
-            </label>
-            <select
-              value={paymentMode}
-              onChange={(e) => setPaymentMode(e.target.value)}
-              className="input w-full"
-            >
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-            </select>
-          </div>
+          <select
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            className="input w-full mb-4"
+          >
+            <option value="6hr">6 Hours</option>
+            <option value="12hr">12 Hours</option>
+            <option value="24hr">24 Hours</option>
+          </select>
+          <select
+            value={paymentMode}
+            onChange={(e) => setPaymentMode(e.target.value)}
+            className="input w-full mb-6"
+          >
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+          </select>
 
           <div className="bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg text-sm mb-6">
-            <strong>Note:</strong> Bring original <strong>Aadhar</strong>, a
-            <strong> photocopy</strong>, and a{" "}
-            <strong>passport-size photo</strong>.
+            <strong>Note:</strong> Bring Aadhar, photocopy & passport-size
+            photo.
           </div>
 
           <button
