@@ -140,6 +140,20 @@ export default function BookLibrary() {
           )}
           <input
             type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="input w-full mb-4"
+          />
+          <input
+            type="date"
+            placeholder="DD-MM-YYYY"
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+            className="input w-full mb-4"
+          />
+          <input
+            type="text"
             placeholder="Aadhar Number"
             value={aadhar}
             onChange={(e) => setAadhar(e.target.value)}
@@ -157,20 +171,6 @@ export default function BookLibrary() {
             placeholder="Phone Number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="input w-full mb-4"
-          />
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="input w-full mb-4"
-          />
-          <input
-            type="date"
-            placeholder="Date of Birth"
-            value={dob}
-            onChange={(e) => setDob(e.target.value)}
             className="input w-full mb-4"
           />
           <select
