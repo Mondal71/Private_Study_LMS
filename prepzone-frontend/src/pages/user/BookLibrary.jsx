@@ -44,8 +44,7 @@ export default function BookLibrary() {
       try {
         await API.post(
           `/reservations/book/${id}`,
-          { aadhar, email, phoneNumber: phone, paymentMode, duration },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { aadhar, email, phoneNumber: phone, paymentMode, duration }
         );
         alert("Booking successful!");
         navigate("/user/my-bookings");
@@ -58,9 +57,7 @@ export default function BookLibrary() {
     }
 
     try {
-      const libRes = await API.get(`/libraries/all`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const libRes = await API.get(`/libraries/all`);
 
       const selectedLibrary = libRes.data.libraries.find(
         (lib) => lib._id === id
@@ -76,8 +73,7 @@ export default function BookLibrary() {
 
       const orderRes = await API.post(
         "/payment/cashfree/create-order",
-        { amount, email, phone, name: "PrepZone User" },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { amount, email, phone, name: "PrepZone User" }
       );
 
       const { paymentSessionId } = orderRes.data;
@@ -97,18 +93,22 @@ export default function BookLibrary() {
         },
         onSuccess: async () => {
           alert("✅ Payment successful");
-          await API.post(
-            `/reservations/book/${id}`,
-            {
-              aadhar,
-              email,
-              phoneNumber: phone,
-              paymentMode: "online",
-              duration,
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          navigate("/user/my-bookings");
+          try {
+            await API.post(
+              `/reservations/book/${id}`,
+              {
+                aadhar,
+                email,
+                phoneNumber: phone,
+                paymentMode: "online",
+                duration,
+              }
+            );
+            navigate("/user/my-bookings");
+          } catch (error) {
+            console.error("Booking error after payment:", error);
+            alert("Payment successful but booking failed. Please contact support.");
+          }
         },
         onFailure: () => {
           alert("❌ Payment failed");

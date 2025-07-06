@@ -10,7 +10,21 @@ exports.createCashfreeOrder = async (req, res) => {
       email,
       phone,
       name,
-    }); 
+    });
+
+    // Debug environment variables
+    console.log("Cashfree Config Check:", {
+      appId: process.env.CASHFREE_APP_ID ? "Set" : "Not Set",
+      secretKey: process.env.CASHFREE_SECRET_KEY ? "Set" : "Not Set",
+      nodeEnv: process.env.NODE_ENV
+    });
+
+    if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: "Cashfree credentials not configured. Please check environment variables.",
+      });
+    } 
 
     const response = await axios.post(
       "https://sandbox.cashfree.com/pg/orders",

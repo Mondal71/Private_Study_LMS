@@ -17,7 +17,9 @@ const app = express();
 //  CORS setup with frontend URL
 app.use(
   cors({
-    origin: "https://private-study-lms-frontend.onrender.com",
+    origin: process.env.NODE_ENV === "production" 
+      ? "https://private-study-lms-frontend.onrender.com"
+      : ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
     credentials: true,
   })
 );
