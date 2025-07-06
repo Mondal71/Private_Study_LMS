@@ -9,6 +9,7 @@ export default function BookLibrary() {
   const [phone, setPhone] = useState("");
   const [duration, setDuration] = useState("6hr");
   const [loading, setLoading] = useState(false);
+  const [payLoading, setPayLoading] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -32,6 +33,53 @@ export default function BookLibrary() {
       alert(err.response?.data?.error || "Booking failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePayOnline = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Please login first");
+    if (aadhar.length !== 12) return alert("Aadhar must be 12 digits");
+    if (!email.includes("@")) return alert("Enter valid email");
+    if (phone.length < 10) return alert("Enter valid phone number");
+
+    setPayLoading(true);
+    try {
+      // For demo, set a fixed amount or fetch from backend if needed
+      const amount = 500; // INR
+      const { data } = await API.post("/razorpay/create-order", { amount });
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: data.order.amount,
+        currency: data.order.currency,
+        order_id: data.order.id,
+        name: "PrepZone",
+        description: "Library Booking Payment",
+        handler: async function (response) {
+          alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+          // Book the seat as paid
+          try {
+            await API.post(
+              `/reservations/book/${id}`,
+              { aadhar, email, phoneNumber: phone, paymentMode: "online", duration }
+            );
+            navigate("/user/my-bookings");
+          } catch (err) {
+            alert("Payment succeeded but booking failed. Contact support.");
+          }
+        },
+        prefill: {
+          email,
+          contact: phone,
+        },
+        theme: { color: "#6366f1" },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      alert("Failed to initiate payment");
+    } finally {
+      setPayLoading(false);
     }
   };
 
@@ -81,10 +129,18 @@ export default function BookLibrary() {
 
           <button
             onClick={handleBook}
-            className="btn-primary w-full"
+            className="btn-primary w-full mb-3"
             disabled={loading}
           >
-            {loading ? "Processing..." : "Book Now"}
+            {loading ? "Processing..." : "Book Offline"}
+          </button>
+
+          <button
+            onClick={handlePayOnline}
+            className="btn-primary w-full bg-green-600 hover:bg-green-700"
+            disabled={payLoading}
+          >
+            {payLoading ? "Processing..." : "Pay Online"}
           </button>
         </div>
       </div>
