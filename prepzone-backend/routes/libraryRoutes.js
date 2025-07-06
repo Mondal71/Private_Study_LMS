@@ -13,6 +13,7 @@ const { verifyToken } = require("../middleware/auth");
 
 //  Public Route
 router.get("/all", getAllLibraries);
+router.get("/:id", require("../controllers/libraryController").getLibraryById);
 
 //  Admin Routes
 router.post("/admin/library", verifyToken, createLibrary);

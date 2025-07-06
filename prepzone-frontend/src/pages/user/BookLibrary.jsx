@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../../services/api";
 import Navbar from "../../components/Navbar";
@@ -10,22 +10,45 @@ export default function BookLibrary() {
   const [duration, setDuration] = useState("6hr");
   const [loading, setLoading] = useState(false);
   const [payLoading, setPayLoading] = useState(false);
+  const [library, setLibrary] = useState(null);
+  const [prices, setPrices] = useState({ sixHour: 0, twelveHour: 0, twentyFourHour: 0 });
   const navigate = useNavigate();
   const { id } = useParams();
+
+  useEffect(() => {
+    // Fetch library details by ID
+    API.get(`/libraries/${id}`)
+      .then((res) => {
+        setLibrary(res.data.library);
+        setPrices(res.data.library.prices || {});
+        // Set default duration to first available plan
+        if (res.data.library.prices.sixHour) setDuration("6hr");
+        else if (res.data.library.prices.twelveHour) setDuration("12hr");
+        else if (res.data.library.prices.twentyFourHour) setDuration("24hr");
+      })
+      .catch(() => {
+        alert("Failed to load library details");
+      });
+  }, [id]);
+
+  const getPrice = () => {
+    if (duration === "6hr") return prices.sixHour;
+    if (duration === "12hr") return prices.twelveHour;
+    if (duration === "24hr") return prices.twentyFourHour;
+    return 0;
+  };
 
   const handleBook = async () => {
     const token = localStorage.getItem("token");
     if (!token) return alert("Please login first");
-
     if (aadhar.length !== 12) return alert("Aadhar must be 12 digits");
     if (!email.includes("@")) return alert("Enter valid email");
     if (phone.length < 10) return alert("Enter valid phone number");
-
     setLoading(true);
     try {
       await API.post(
         `/reservations/book/${id}`,
-        { aadhar, email, phoneNumber: phone, paymentMode: "offline", duration }
+        { aadhar, email, phoneNumber: phone, paymentMode: "offline", duration, price: getPrice() }
       );
       alert("Booking successful!");
       navigate("/user/my-bookings");
@@ -42,26 +65,25 @@ export default function BookLibrary() {
     if (aadhar.length !== 12) return alert("Aadhar must be 12 digits");
     if (!email.includes("@")) return alert("Enter valid email");
     if (phone.length < 10) return alert("Enter valid phone number");
-
     setPayLoading(true);
     try {
-      // For demo, set a fixed amount or fetch from backend if needed
-      const amount = 500; // INR
+      const amount = getPrice();
+      if (!amount) return alert("Invalid plan or price");
       const { data } = await API.post("/razorpay/create-order", { amount });
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: data.order.amount,
         currency: data.order.currency,
         order_id: data.order.id,
-        name: "PrepZone",
-        description: "Library Booking Payment",
+        name: library?.name || "PrepZone",
+        description: `Library Booking Payment - ${duration}`,
         handler: async function (response) {
           alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
           // Book the seat as paid
           try {
             await API.post(
               `/reservations/book/${id}`,
-              { aadhar, email, phoneNumber: phone, paymentMode: "online", duration }
+              { aadhar, email, phoneNumber: phone, paymentMode: "online", duration, price: getPrice() }
             );
             navigate("/user/my-bookings");
           } catch (err) {
@@ -91,6 +113,25 @@ export default function BookLibrary() {
           <h2 className="text-2xl font-bold text-indigo-700 text-center mb-6">
             Book Your Seat
           </h2>
+          {library && (
+            <div className="mb-4 text-center">
+              <div className="font-semibold text-lg mb-2">{library.name}</div>
+              <div className="text-gray-500 text-sm mb-1">{library.location}</div>
+              <div className="text-gray-600 text-xs mb-2">{library.address}</div>
+              <div className="flex flex-wrap justify-center gap-2 text-xs">
+                {Object.entries(prices).map(([key, value]) =>
+                  value ? (
+                    <span key={key} className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
+                      {key === "sixHour" && "6hr"}
+                      {key === "twelveHour" && "12hr"}
+                      {key === "twentyFourHour" && "24hr"}
+                      : ₹{value}
+                    </span>
+                  ) : null
+                )}
+              </div>
+            </div>
+          )}
           <input
             type="text"
             placeholder="Aadhar Number"
@@ -117,9 +158,9 @@ export default function BookLibrary() {
             onChange={(e) => setDuration(e.target.value)}
             className="input w-full mb-4"
           >
-            <option value="6hr">6 Hours</option>
-            <option value="12hr">12 Hours</option>
-            <option value="24hr">24 Hours</option>
+            {prices.sixHour ? <option value="6hr">6 Hours (₹{prices.sixHour})</option> : null}
+            {prices.twelveHour ? <option value="12hr">12 Hours (₹{prices.twelveHour})</option> : null}
+            {prices.twentyFourHour ? <option value="24hr">24 Hours (₹{prices.twentyFourHour})</option> : null}
           </select>
 
           <div className="bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg text-sm mb-6">
@@ -132,7 +173,7 @@ export default function BookLibrary() {
             className="btn-primary w-full mb-3"
             disabled={loading}
           >
-            {loading ? "Processing..." : "Book Offline"}
+            {loading ? "Processing..." : `Book Offline (₹${getPrice()})`}
           </button>
 
           <button
@@ -140,7 +181,7 @@ export default function BookLibrary() {
             className="btn-primary w-full bg-green-600 hover:bg-green-700"
             disabled={payLoading}
           >
-            {payLoading ? "Processing..." : "Pay Online"}
+            {payLoading ? "Processing..." : `Pay Online (₹${getPrice()})`}
           </button>
         </div>
       </div>

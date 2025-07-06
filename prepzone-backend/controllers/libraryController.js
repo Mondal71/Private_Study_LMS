@@ -154,3 +154,14 @@ exports.getAllLibraries = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch libraries" });
   }
 };
+
+// PUBLIC: GET SINGLE LIBRARY BY ID
+exports.getLibraryById = async (req, res) => {
+  try {
+    const library = await Library.findById(req.params.id);
+    if (!library) return res.status(404).json({ error: "Library not found" });
+    res.status(200).json({ library });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch library" });
+  }
+};
