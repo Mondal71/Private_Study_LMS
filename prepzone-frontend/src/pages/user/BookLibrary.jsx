@@ -146,8 +146,8 @@ export default function BookLibrary() {
             className="input w-full mb-4"
           />
           <input
-            type="date"
-            placeholder="DD-MM-YYYY"
+            type="text"
+            placeholder="DOB (DD-MM-YYYY)"
             value={dob}
             onChange={(e) => setDob(e.target.value)}
             className="input w-full mb-4"
