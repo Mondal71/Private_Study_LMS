@@ -1,3 +1,4 @@
+require("dotenv").config();
 const Razorpay = require("razorpay");
 
 const razorpay = new Razorpay({
@@ -18,4 +19,4 @@ exports.createOrder = async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-}; 
+};

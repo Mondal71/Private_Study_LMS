@@ -4,6 +4,11 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 
 dotenv.config();
+
+// Debug: Print Razorpay env variables
+console.log("RAZORPAY_KEY_ID:", process.env.RAZORPAY_KEY_ID);
+console.log("RAZORPAY_KEY_SECRET:", process.env.RAZORPAY_KEY_SECRET);
+
 connectDB();
 
 const userRoutes = require("./routes/userRoutes");
