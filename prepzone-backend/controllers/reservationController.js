@@ -3,7 +3,7 @@ const Library = require("../models/Library");
 
 //  Book a Seat
 exports.bookSeat = async (req, res) => {
-  const { aadhar, email, phoneNumber, paymentMode, duration } = req.body;
+  const { aadhar, email, phoneNumber, paymentMode, duration, name, dob, price } = req.body;
   const libraryId = req.params.id;
 
   try {
@@ -45,6 +45,8 @@ exports.bookSeat = async (req, res) => {
       isPaid: false,
       status: "pending",
       expiresAt,
+      name,
+      dob,
     });
 
     await reservation.save();

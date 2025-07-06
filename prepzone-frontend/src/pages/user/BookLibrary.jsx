@@ -12,6 +12,8 @@ export default function BookLibrary() {
   const [payLoading, setPayLoading] = useState(false);
   const [library, setLibrary] = useState(null);
   const [prices, setPrices] = useState({ sixHour: 0, twelveHour: 0, twentyFourHour: 0 });
+  const [name, setName] = useState("");
+  const [dob, setDob] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -44,11 +46,13 @@ export default function BookLibrary() {
     if (aadhar.length !== 12) return alert("Aadhar must be 12 digits");
     if (!email.includes("@")) return alert("Enter valid email");
     if (phone.length < 10) return alert("Enter valid phone number");
+    if (!name.trim()) return alert("Name is required");
+    if (!dob) return alert("Date of Birth is required");
     setLoading(true);
     try {
       await API.post(
         `/reservations/book/${id}`,
-        { aadhar, email, phoneNumber: phone, paymentMode: "offline", duration, price: getPrice() }
+        { aadhar, email, phoneNumber: phone, paymentMode: "offline", duration, price: getPrice(), name, dob }
       );
       alert("Booking successful!");
       navigate("/user/my-bookings");
@@ -65,6 +69,8 @@ export default function BookLibrary() {
     if (aadhar.length !== 12) return alert("Aadhar must be 12 digits");
     if (!email.includes("@")) return alert("Enter valid email");
     if (phone.length < 10) return alert("Enter valid phone number");
+    if (!name.trim()) return alert("Name is required");
+    if (!dob) return alert("Date of Birth is required");
     setPayLoading(true);
     try {
       const amount = getPrice();
@@ -83,7 +89,7 @@ export default function BookLibrary() {
           try {
             await API.post(
               `/reservations/book/${id}`,
-              { aadhar, email, phoneNumber: phone, paymentMode: "online", duration, price: getPrice() }
+              { aadhar, email, phoneNumber: phone, paymentMode: "online", duration, price: getPrice(), name, dob }
             );
             navigate("/user/my-bookings");
           } catch (err) {
@@ -151,6 +157,20 @@ export default function BookLibrary() {
             placeholder="Phone Number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            className="input w-full mb-4"
+          />
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="input w-full mb-4"
+          />
+          <input
+            type="date"
+            placeholder="Date of Birth"
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
             className="input w-full mb-4"
           />
           <select
