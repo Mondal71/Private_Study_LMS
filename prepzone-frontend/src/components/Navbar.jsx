@@ -51,6 +51,14 @@ export default function Navbar({ onSearch }) {
             About
           </Link>
 
+          {/* Add Refund and Privacy Policy links */}
+          <Link to="/refund-policy" className="text-gray-700 hover:text-indigo-600">
+            Refund Policy
+          </Link>
+          <Link to="/privacy-policy" className="text-gray-700 hover:text-indigo-600">
+            Privacy Policy
+          </Link>
+
           {isLoggedIn && role === "user" && (
             <>
               <Link
@@ -152,6 +160,20 @@ export default function Navbar({ onSearch }) {
             className="block text-gray-700 hover:text-indigo-600 mb-2"
           >
             About
+          </Link>
+
+          {/* Add Refund and Privacy Policy links */}
+          <Link
+            to="/refund-policy"
+            className="block text-gray-700 hover:text-indigo-600 mb-2"
+          >
+            Refund Policy
+          </Link>
+          <Link
+            to="/privacy-policy"
+            className="block text-gray-700 hover:text-indigo-600 mb-2"
+          >
+            Privacy Policy
           </Link>
 
           {isLoggedIn && role === "user" && (
