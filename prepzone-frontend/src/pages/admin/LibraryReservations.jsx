@@ -87,29 +87,31 @@ export default function LibraryReservations() {
                 <strong>Date of Birth:</strong> {res.dob || "--"}
               </p>
               <p>
-                <strong>User Name:</strong> {res?.userId?.name || "Unknown"}
+                <strong>Aadhar:</strong> {res.aadhar || "--"}
               </p>
               <p>
-                <strong>Aadhar:</strong> {res.aadhar || "--"}
+                <strong>Email:</strong> {res.email || "--"}
               </p>
               <p>
                 <strong>Phone:</strong> {res.phoneNumber || "--"}
               </p>
               <p>
-                <strong>Payment Mode:</strong>{" "}
-                {res.paymentMode?.toUpperCase() || "--"}
+                <strong>Duration:</strong> {res.duration || "--"}
               </p>
               <p>
-                <strong>Status:</strong>{" "}
-                <span
-                  className={`${
-                    res.status === "pending"
-                      ? "text-yellow-600"
-                      : res.status === "confirmed"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  } font-semibold`}
-                >
+                <strong>Price:</strong> ₹{res.price || "--"}
+              </p>
+              <p>
+                <strong>Payment Mode:</strong> {res.paymentMode?.toUpperCase() || "--"}
+              </p>
+              <p>
+                <strong>Status:</strong> <span className={`$ {
+                  res.status === "pending"
+                    ? "text-yellow-600"
+                    : res.status === "confirmed"
+                    ? "text-green-600"
+                    : "text-red-600"
+                } font-semibold`}>
                   {res.status?.toUpperCase()}
                 </span>
               </p>
