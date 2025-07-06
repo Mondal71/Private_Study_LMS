@@ -81,7 +81,7 @@ export default function LibraryReservations() {
               className="border p-4 mb-4 rounded bg-white shadow"
             >
               <p>
-                <strong>Name:</strong> {res.name || "--"}
+                <strong>Name:</strong> {res.name || res?.userId?.name || "--"}
               </p>
               <p>
                 <strong>Date of Birth:</strong> {res.dob || "--"}
