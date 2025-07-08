@@ -15,8 +15,8 @@ export default function Navbar({ onSearch }) {
   // Handle screen size changes
   useEffect(() => {
     const handleResize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024); // lg breakpoint
-      if (window.innerWidth >= 1024) {
+      setIsLargeScreen(window.innerWidth >= 1280); // xl breakpoint for desktop only
+      if (window.innerWidth >= 1280) {
         setIsMenuOpen(false); // Close mobile menu on large screens
       }
     };
@@ -49,9 +49,9 @@ export default function Navbar({ onSearch }) {
             </h1>
           </Link>
 
-          {/* Desktop Search - Show on medium screens and up */}
+          {/* Desktop Search - Show on large screens only */}
           {showSearch && (
-            <div className="hidden sm:block flex-1 max-w-md mx-4">
+            <div className="hidden xl:block flex-1 max-w-md mx-4">
               <input
                 type="text"
                 placeholder="Search by location..."
@@ -61,8 +61,8 @@ export default function Navbar({ onSearch }) {
             </div>
           )}
 
-          {/* Desktop Navigation - Show on large screens */}
-          <nav className="hidden lg:flex items-center gap-4 lg:gap-6">
+          {/* Desktop Navigation - Show on xl screens only (desktop) */}
+          <nav className="hidden xl:flex items-center gap-4 lg:gap-6">
             <Link to="/" className="text-gray-700 hover:text-indigo-600 text-sm lg:text-base">
               Home
             </Link>
@@ -113,34 +113,8 @@ export default function Navbar({ onSearch }) {
             )}
           </nav>
 
-          {/* Medium Screen Navigation - Show on medium screens but hide on large */}
-          <nav className="hidden sm:flex lg:hidden items-center gap-3">
-            <Link to="/" className="text-gray-700 hover:text-indigo-600 text-sm">
-              Home
-            </Link>
-            <Link to="/about" className="text-gray-700 hover:text-indigo-600 text-sm">
-              About
-            </Link>
-            
-            {!isLoggedIn ? (
-              <Link
-                to="/user/login"
-                className="bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700 text-sm"
-              >
-                Login
-              </Link>
-            ) : (
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 text-white px-3 py-1.5 rounded-md hover:bg-red-700 text-sm"
-              >
-                Logout
-              </button>
-            )}
-          </nav>
-
-          {/* Hamburger Button - Show on small screens only */}
-          <div className="sm:hidden lg:hidden">
+          {/* Hamburger Button - Show on all devices except desktop (xl) */}
+          <div className="xl:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-700 focus:outline-none p-1"
@@ -172,9 +146,9 @@ export default function Navbar({ onSearch }) {
           </div>
         </div>
 
-        {/* Search Bar - Mobile (Below Logo) */}
+        {/* Search Bar - Mobile/Tablet (Below Logo) */}
         {showSearch && (
-          <div className="sm:hidden px-0 pb-3">
+          <div className="xl:hidden px-0 pb-3">
             <input
               type="text"
               placeholder="Search by location..."
@@ -184,9 +158,9 @@ export default function Navbar({ onSearch }) {
           </div>
         )}
 
-        {/* Mobile Dropdown Menu - Corner positioned */}
+        {/* Mobile/Tablet Dropdown Menu - Corner positioned */}
         {isMenuOpen && (
-          <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-64 z-50 sm:hidden lg:hidden">
+          <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-64 z-50 xl:hidden">
             <div className="space-y-2">
               <Link
                 to="/"
