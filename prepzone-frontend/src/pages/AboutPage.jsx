@@ -1,17 +1,16 @@
-import Navbar from "../components/Navbar";
+import Layout from "../components/Layout";
 import founderImg from "../assets/founder.jpg"; 
 import studyImg from "../assets/study.jpg"; 
 
 export default function AboutPage() {
   return (
-    <>
-      <Navbar />
+    <Layout>
       <div className="bg-white text-gray-800">
         {/* Hero Section */}
         <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-10 items-center">
           <div>
             <h1 className="text-4xl font-bold mb-4">
-              India’s Trusted Library Booking App
+              India's Trusted Library Booking App
             </h1>
             <p className="text-lg text-gray-600 mb-4">
               PrepZone is not just an app, it's a revolution in how students
@@ -82,6 +81,6 @@ export default function AboutPage() {
           </a>
         </div>
       </div>
-    </>
+    </Layout>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
+import Layout from "../../components/Layout";
 import API from "../../services/api";
 
 export default function AdminDashboard() {
@@ -54,8 +54,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <>
-      <Navbar />
+    <Layout>
       <div className="min-h-[90vh] px-4 py-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl font-bold text-indigo-700 text-center mb-6">
@@ -143,6 +142,6 @@ export default function AdminDashboard() {
           </button>
         </div>
       </div>
-    </>
+    </Layout>
   );
 }

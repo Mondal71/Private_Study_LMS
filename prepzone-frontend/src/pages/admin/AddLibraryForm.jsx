@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import Navbar from "../../components/Navbar";
+import Layout from "../../components/Layout";
 
 export default function AddLibraryForm() {
   const navigate = useNavigate();
@@ -57,8 +57,7 @@ export default function AddLibraryForm() {
   };
 
   return (
-    <>
-      <Navbar />
+    <Layout>
       <div className="min-h-[90vh] flex justify-center items-center bg-gray-50">
         <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-xl">
           <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">
@@ -155,6 +154,6 @@ export default function AddLibraryForm() {
           </button>
         </div>
       </div>
-    </>
+    </Layout>
   );
 }

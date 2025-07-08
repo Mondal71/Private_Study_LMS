@@ -1,7 +1,7 @@
-import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
 import RoleSelector from "../components/RoleSelector";
+import Layout from "../components/Layout";
 import homeImage from "../photo/homephoto.jpg";
 
 export default function HomePage() {
@@ -19,9 +19,7 @@ export default function HomePage() {
   };
 
   return (
-    <>
-      <Navbar />
-
+    <Layout>
       {/* Welcome Line */}
       <div className="border-t-2 border-indigo-600 text-center py-4">
         <h2 className="text-4xl sm:text-6xl font-bold text-indigo-700 animate-pulse tracking-wide">
@@ -87,6 +85,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-    </>
+    </Layout>
   );
 }

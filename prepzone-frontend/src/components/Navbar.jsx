@@ -70,14 +70,6 @@ export default function Navbar({ onSearch }) {
               About
             </Link>
 
-            {/* Add Refund and Privacy Policy links */}
-            <Link to="/refund-policy" className="text-gray-700 hover:text-indigo-600 text-sm lg:text-base">
-              Refund Policy
-            </Link>
-            <Link to="/privacy-policy" className="text-gray-700 hover:text-indigo-600 text-sm lg:text-base">
-              Privacy Policy
-            </Link>
-
             {isLoggedIn && role === "user" && (
               <>
                 <Link
@@ -147,7 +139,7 @@ export default function Navbar({ onSearch }) {
             )}
           </nav>
 
-          {/* Hamburger Button - Show on small screens and medium screens */}
+          {/* Hamburger Button - Show on small screens only */}
           <div className="sm:hidden lg:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -192,10 +184,10 @@ export default function Navbar({ onSearch }) {
           </div>
         )}
 
-        {/* Mobile Dropdown Menu */}
+        {/* Mobile Dropdown Menu - Corner positioned */}
         {isMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 sm:hidden lg:hidden">
-            <div className="px-4 py-3 space-y-2">
+          <div className="absolute top-full right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-64 z-50 sm:hidden lg:hidden">
+            <div className="space-y-2">
               <Link
                 to="/"
                 className="block text-gray-700 hover:text-indigo-600 py-2 text-base"
@@ -209,22 +201,6 @@ export default function Navbar({ onSearch }) {
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
-              </Link>
-
-              {/* Add Refund and Privacy Policy links */}
-              <Link
-                to="/refund-policy"
-                className="block text-gray-700 hover:text-indigo-600 py-2 text-base"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Refund Policy
-              </Link>
-              <Link
-                to="/privacy-policy"
-                className="block text-gray-700 hover:text-indigo-600 py-2 text-base"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Privacy Policy
               </Link>
 
               {isLoggedIn && role === "user" && (

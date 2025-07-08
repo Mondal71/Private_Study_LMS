@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../../services/api";
-import Navbar from "../../components/Navbar";
+import Layout from "../../components/Layout";
 
 export default function BookLibrary() {
   const [aadhar, setAadhar] = useState("");
@@ -112,8 +112,7 @@ export default function BookLibrary() {
   };
 
   return (
-    <>
-      <Navbar />
+    <Layout>
       <div className="min-h-screen flex justify-center items-center bg-gray-50 px-4 py-8">
         <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-lg">
           <h2 className="text-2xl font-bold text-indigo-700 text-center mb-6">
@@ -205,6 +204,6 @@ export default function BookLibrary() {
           </button>
         </div>
       </div>
-    </>
+    </Layout>
   );
 }

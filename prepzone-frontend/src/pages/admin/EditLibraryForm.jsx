@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../../services/api";
-import Navbar from "../../components/Navbar";
+import Layout from "../../components/Layout";
 
 export default function EditLibraryForm() {
-  const { id } = useParams();
   const navigate = useNavigate();
-
+  const { id } = useParams();
   const [form, setForm] = useState({
     name: "",
     location: "",
@@ -20,56 +19,46 @@ export default function EditLibraryForm() {
     twentyFourHour: "",
   });
 
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const fetchLibrary = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await API.get("/libraries/admin/my-libraries", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const lib = res.data.libraries.find((l) => l._id === id);
-        if (!lib) {
-          alert("Library not found");
-          return navigate("/admin/dashboard");
-        }
-
-        setForm({
-          name: lib.name,
-          location: lib.location,
-          totalSeats: lib.totalSeats,
-          availableSeats: lib.availableSeats,
-          amenities: lib.amenities?.join(", ") || "",
-          phoneNumber: lib.phoneNumber || "",
-          address: lib.address || "",
-          sixHour: lib.prices?.sixHour || "",
-          twelveHour: lib.prices?.twelveHour || "",
-          twentyFourHour: lib.prices?.twentyFourHour || "",
-        });
-        setLoading(false);
-      } catch (err) {
-        alert("Failed to load library");
-        navigate("/admin/dashboard");
-      }
-    };
-
     fetchLibrary();
-  }, [id, navigate]);
+  }, [id]);
+
+  const fetchLibrary = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await API.get(`/libraries/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const library = res.data.library;
+      setForm({
+        name: library.name || "",
+        location: library.location || "",
+        totalSeats: library.totalSeats || "",
+        availableSeats: library.availableSeats || "",
+        amenities: library.amenities ? library.amenities.join(", ") : "",
+        phoneNumber: library.phoneNumber || "",
+        address: library.address || "",
+        sixHour: library.prices?.sixHour || "",
+        twelveHour: library.prices?.twelveHour || "",
+        twentyFourHour: library.prices?.twentyFourHour || "",
+      });
+    } catch (err) {
+      alert("Failed to fetch library details");
+      navigate("/admin/dashboard");
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleUpdate = async () => {
+  const handleSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
-
       const amenities = form.amenities
         .split(",")
         .map((a) => a.trim())
-        .filter(Boolean);
+        .filter((a) => a !== "");
 
       const payload = {
         name: form.name.trim(),
@@ -93,28 +82,16 @@ export default function EditLibraryForm() {
       alert("Library updated successfully!");
       navigate("/admin/dashboard");
     } catch (err) {
-      alert(err.response?.data?.error || "Update failed");
+      alert(err.response?.data?.error || "Failed to update library");
     }
   };
 
-  if (loading) {
-    return (
-      <>
-        <Navbar />
-        <div className="min-h-[90vh] flex justify-center items-center bg-gray-100">
-          <p className="text-xl text-gray-600">Loading library data...</p>
-        </div>
-      </>
-    );
-  }
-
   return (
-    <>
-      <Navbar />
+    <Layout>
       <div className="min-h-[90vh] flex justify-center items-center bg-gray-50">
         <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-xl">
           <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">
-            Update Library
+            Edit Library
           </h2>
 
           <input
@@ -128,7 +105,7 @@ export default function EditLibraryForm() {
           <input
             type="text"
             name="location"
-            placeholder="Location"
+            placeholder="City/Area"
             value={form.location}
             onChange={handleChange}
             className="input w-full mb-4"
@@ -160,7 +137,7 @@ export default function EditLibraryForm() {
           <input
             type="text"
             name="phoneNumber"
-            placeholder="Contact Phone Number"
+            placeholder="Contact Number"
             value={form.phoneNumber}
             onChange={handleChange}
             className="input w-full mb-4"
@@ -171,10 +148,10 @@ export default function EditLibraryForm() {
             placeholder="Full Address"
             value={form.address}
             onChange={handleChange}
-            className="input w-full mb-4"
+            className="input w-full mb-6"
           />
 
-          {/*Pricing fields */}
+          {/* Pricing Inputs */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <input
               type="number"
@@ -202,11 +179,11 @@ export default function EditLibraryForm() {
             />
           </div>
 
-          <button className="btn-primary w-full" onClick={handleUpdate}>
-            Save Changes
+          <button className="btn-primary w-full" onClick={handleSubmit}>
+            Update Library
           </button>
         </div>
       </div>
-    </>
+    </Layout>
   );
 }

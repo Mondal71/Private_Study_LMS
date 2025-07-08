@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
+import Layout from "../../components/Layout";
 import API from "../../services/api";
 
 export default function MyBookings() {
@@ -51,8 +51,7 @@ export default function MyBookings() {
   };
 
   return (
-    <>
-      <Navbar />
+    <Layout>
       <div className="max-w-4xl mx-auto p-4">
         <h1 className="text-2xl font-bold text-indigo-700 mb-6 text-center">
           📋 My Bookings
@@ -130,6 +129,6 @@ export default function MyBookings() {
           </div>
         )}
       </div>
-    </>
+    </Layout>
   );
 }

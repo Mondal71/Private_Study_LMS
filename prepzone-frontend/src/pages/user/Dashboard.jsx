@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import API from "../../services/api";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
+import Layout from "../../components/Layout";
 import noImage from "../../photo/default.jpg";
 
 export default function Dashboard() {
@@ -32,8 +32,7 @@ export default function Dashboard() {
   );
 
   return (
-    <>
-      <Navbar onSearch={(text) => setSearchArea(text)} />
+    <Layout onSearch={setSearchArea}>
       <div className="container mx-auto p-4 min-h-screen">
         <h1 className="text-2xl font-bold mb-6 text-indigo-700 text-center">
           Available Libraries
@@ -108,6 +107,6 @@ export default function Dashboard() {
           </p>
         )}
       </div>
-    </>
+    </Layout>
   );
 }
