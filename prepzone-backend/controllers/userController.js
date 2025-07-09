@@ -48,6 +48,10 @@ exports.sendOTP = async (req, res) => {
     if (!user) {
       user = new User({ name, email, otp, isVerified: false });
     } else {
+      // Check if user already has a password (already registered)
+      if (user.password) {
+        return res.status(409).json({ error: "User already exists. Please login instead." });
+      }
       user.name = name;
       user.otp = otp;
       user.otpCreatedAt = Date.now();

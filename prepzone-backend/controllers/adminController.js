@@ -40,6 +40,10 @@ exports.sendOTP = async (req, res) => {
       // FIXED: Include otpCreatedAt here
       admin = new Admin({ name, email, otp, otpCreatedAt: Date.now() });
     } else {
+      // Check if admin already has a password (already registered)
+      if (admin.password) {
+        return res.status(409).json({ error: "Admin already exists. Please login instead." });
+      }
       admin.otp = otp;
       admin.otpCreatedAt = Date.now();
       admin.name = name;
