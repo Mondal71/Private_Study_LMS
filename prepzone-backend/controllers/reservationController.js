@@ -30,6 +30,10 @@ exports.bookSeat = async (req, res) => {
         .json({ error: "Price not set for selected duration" });
     }
 
+    // Decrement seat immediately for both offline and online
+    library.availableSeats -= 1;
+    await library.save();
+
     const expiresAt =
       paymentMode === "offline" ? new Date(Date.now() + 60 * 60 * 1000) : null;
 
@@ -42,18 +46,19 @@ exports.bookSeat = async (req, res) => {
       paymentMode,
       duration,
       price,
-      isPaid: false,
-      status: "pending",
+      isPaid: paymentMode === "online", // Mark as paid if online
+      status: paymentMode === "online" ? "confirmed" : "pending", // Confirmed if online
       expiresAt,
       name,
       dob,
+      seatTaken: true, // Custom field to track if seat was decremented
     });
 
     await reservation.save();
 
     res.status(201).json({
       success: true,
-      message: "Seat reserved",
+      message: paymentMode === "online" ? "Admission successful" : "Seat reserved, pending admin approval",
       reservation,
     });
   } catch (error) {
@@ -128,16 +133,17 @@ exports.autoCancelUnpaidReservations = async () => {
       isPaid: false,
       createdAt: { $lt: oneHourAgo },
       status: "pending",
+      seatTaken: true,
     });
 
     for (const reservation of reservations) {
       reservation.status = "cancelled";
       await reservation.save();
-
       await Library.findByIdAndUpdate(reservation.libraryId, {
         $inc: { availableSeats: 1 },
       });
-
+      reservation.seatTaken = false;
+      await reservation.save();
       console.log(`⛔ Auto-cancelled reservation ${reservation._id}`);
     }
 
@@ -189,38 +195,24 @@ exports.handleReservationDecision = async (req, res) => {
     }
 
     if (decision === "accept") {
-      if (library.availableSeats > 0) {
-        reservation.status = "confirmed";
-        reservation.isPaid = true;
-        reservation.message = "Admission done successfully";
-        await reservation.save();
-
-        library.availableSeats -= 1;
-        await library.save();
-
-        return res.json({ message: "Reservation accepted" });
-      } else {
-        reservation.status = "cancelled";
-        reservation.message = "No seats available. Payment refunded.";
-        await reservation.save();
-
-        return res
-          .status(400)
-          .json({ error: "No seats available, reservation cancelled" });
-      }
+      // Do not decrement seat again
+      reservation.status = "confirmed";
+      reservation.isPaid = true;
+      reservation.message = "Admission done successfully";
+      await reservation.save();
+      return res.json({ message: "Reservation accepted" });
     } else if (decision === "reject") {
-      if (reservation.status === "confirmed") {
+      // Only increment seat if it was decremented at booking
+      if (reservation.seatTaken) {
         const library = await Library.findById(reservation.libraryId);
         library.availableSeats += 1;
         await library.save();
+        reservation.seatTaken = false;
       }
-
       reservation.status = "cancelled";
       reservation.message = "Reservation rejected. Payment refunded.";
       reservation.isPaid = false;
-
       await reservation.save();
-
       return res.json({ message: "Reservation rejected" });
     }
   } catch (err) {

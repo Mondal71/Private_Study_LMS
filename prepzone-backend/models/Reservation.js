@@ -59,6 +59,10 @@ const reservationSchema = new mongoose.Schema({
     type: String, // Store as string (YYYY-MM-DD) for simplicity
     required: true,
   },
+  seatTaken: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("Reservation", reservationSchema);
