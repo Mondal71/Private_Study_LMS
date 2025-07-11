@@ -48,8 +48,8 @@ export default function LibraryReservations() {
     try {
       const token = localStorage.getItem("token");
       await API.put(
-        `/reservations/${reservationId}/status`,
-        { status: newStatus },
+        `/reservations/admin/reservations/${reservationId}/decision`,
+        { decision: newStatus },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
