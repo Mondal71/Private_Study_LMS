@@ -127,7 +127,7 @@ exports.autoCancelUnpaidReservations = async () => {
       paymentMode: "offline",
       isPaid: false,
       createdAt: { $lt: oneHourAgo },
-      status: "active",
+      status: "pending",
     });
 
     for (const reservation of reservations) {

@@ -14,7 +14,7 @@ const razorpayRoutes = require("./routes/razorpayRoutes");
 
 const app = express();
 
-// ✅ FIXED: Add deployed frontend domain
+// FIXED: Add deployed frontend domain
 app.use(
   cors({
     origin: [
