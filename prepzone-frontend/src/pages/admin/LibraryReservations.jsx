@@ -155,7 +155,8 @@ export default function LibraryReservations() {
                     </div>
                   )}
 
-                  {res.status === "pending" && (
+                  {/* Show Accept/Reject only for offline and pending */}
+                  {res.status === "pending" && res.paymentMode === "offline" && (
                     <div className="mt-4 flex gap-2">
                       <button
                         onClick={() => handleStatusUpdate(res._id, "confirmed")}
@@ -169,6 +170,12 @@ export default function LibraryReservations() {
                       >
                         ❌ Reject
                       </button>
+                    </div>
+                  )}
+                  {/* Show admission success for online/confirmed */}
+                  {res.status === "confirmed" && (
+                    <div className="mt-4 text-green-700 font-semibold">
+                      Admission success
                     </div>
                   )}
                 </div>

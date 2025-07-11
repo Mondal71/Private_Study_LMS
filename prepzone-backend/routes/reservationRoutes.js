@@ -6,6 +6,7 @@ const {
   cancelReservation,
   getReservationsForAdmin,
   handleReservationDecision,
+  getReservationsByLibrary,
 } = require("../controllers/reservationController");
 const { verifyToken } = require("../middleware/auth");
 
@@ -18,5 +19,6 @@ router.put(
   verifyToken,
   handleReservationDecision
 );
+router.get("/library/:libraryId", verifyToken, getReservationsByLibrary);
 
 module.exports = router;

@@ -220,3 +220,16 @@ exports.handleReservationDecision = async (req, res) => {
     res.status(500).json({ error: "Failed to update reservation" });
   }
 };
+
+// Get all reservations for a specific library
+exports.getReservationsByLibrary = async (req, res) => {
+  try {
+    const { libraryId } = req.params;
+    const reservations = await Reservation.find({ libraryId })
+      .sort({ createdAt: -1 });
+    res.status(200).json({ reservations });
+  } catch (error) {
+    console.error("Get Reservations By Library Error:", error.message);
+    res.status(500).json({ error: "Failed to fetch reservations for library" });
+  }
+};
