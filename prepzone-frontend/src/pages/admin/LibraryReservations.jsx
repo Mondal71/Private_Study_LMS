@@ -47,9 +47,14 @@ export default function LibraryReservations() {
   const handleStatusUpdate = async (reservationId, newStatus) => {
     try {
       const token = localStorage.getItem("token");
+      // Map UI status to backend decision
+      let decision;
+      if (newStatus === "confirmed") decision = "accept";
+      else if (newStatus === "cancelled") decision = "reject";
+      else decision = newStatus;
       await API.put(
         `/reservations/admin/reservations/${reservationId}/decision`,
-        { decision: newStatus },
+        { decision },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
