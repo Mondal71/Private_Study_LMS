@@ -14,6 +14,14 @@ const razorpayRoutes = require("./routes/razorpayRoutes");
 
 const app = express();
 
+// Security and performance headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+app.disable('x-powered-by');
+
 // FIXED: Add deployed frontend domain
 app.use(
   cors({
