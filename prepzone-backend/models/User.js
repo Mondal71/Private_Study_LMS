@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    index: true, // Add explicit index for faster queries
   },
   otp: {
     type: String,
@@ -37,7 +36,7 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Add compound index for login optimization
+// Add index for login optimization (removed duplicate)
 userSchema.index({ email: 1 });
 
 // Add lean() optimization for read-only queries
