@@ -131,9 +131,13 @@ exports.setPassword = async (req, res) => {
 //  LOGIN
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+  const startTime = Date.now();
 
   try {
-    const admin = await Admin.findOne({ email });
+    // Optimize: Only select needed fields for login
+    const dbStart = Date.now();
+    const admin = await Admin.findOne({ email }).select('email password _id name');
+    const dbTime = Date.now() - dbStart;
 
     if (!admin || !admin.password) {
       return res
@@ -141,7 +145,10 @@ exports.login = async (req, res) => {
         .json({ error: "Admin not found or password not set" });
     }
 
+    const bcryptStart = Date.now();
     const isMatch = await bcrypt.compare(password, admin.password);
+    const bcryptTime = Date.now() - bcryptStart;
+    
     if (!isMatch) {
       return res.status(401).json({ error: "Incorrect password" });
     }
@@ -155,6 +162,13 @@ exports.login = async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
+
+    const totalTime = Date.now() - startTime;
+    
+    // Log performance metrics only in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Admin Login Performance - DB: ${dbTime}ms, Bcrypt: ${bcryptTime}ms, Total: ${totalTime}ms`);
+    }
 
     res.status(200).json({
       message: "Login successful",

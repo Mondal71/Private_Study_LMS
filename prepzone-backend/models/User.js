@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    index: true, // Add explicit index for faster queries
   },
   otp: {
     type: String,
@@ -35,5 +36,12 @@ const userSchema = new mongoose.Schema({
     default: "user",
   },
 });
+
+// Add compound index for login optimization
+userSchema.index({ email: 1 });
+
+// Add lean() optimization for read-only queries
+userSchema.set('toJSON', { virtuals: false });
+userSchema.set('toObject', { virtuals: false });
 
 module.exports = mongoose.model("User", userSchema);

@@ -9,6 +9,7 @@ const adminSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    index: true, // Add explicit index for faster queries
   },
   otp: {
     type: String,
@@ -31,5 +32,8 @@ const adminSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+
+// Add compound index for login optimization
+adminSchema.index({ email: 1 });
 
 module.exports = mongoose.model("Admin", adminSchema);

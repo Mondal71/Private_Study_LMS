@@ -131,9 +131,13 @@ exports.setPassword = async (req, res) => {
 //  Login
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+  const startTime = Date.now();
 
   try {
-    const user = await User.findOne({ email });
+    // Optimize: Only select needed fields for login
+    const dbStart = Date.now();
+    const user = await User.findOne({ email }).select('email password _id role');
+    const dbTime = Date.now() - dbStart;
 
     if (!user || !user.password) {
       return res
@@ -141,7 +145,10 @@ exports.login = async (req, res) => {
         .json({ error: "User not found or password not set" });
     }
 
+    const bcryptStart = Date.now();
     const isMatch = await bcrypt.compare(password, user.password);
+    const bcryptTime = Date.now() - bcryptStart;
+    
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid password" });
     }
@@ -151,6 +158,13 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
+
+    const totalTime = Date.now() - startTime;
+    
+    // Log performance metrics only in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Login Performance - DB: ${dbTime}ms, Bcrypt: ${bcryptTime}ms, Total: ${totalTime}ms`);
+    }
 
     res.status(200).json({ token });
   } catch (error) {
