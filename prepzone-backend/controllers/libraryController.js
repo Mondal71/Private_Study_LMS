@@ -1,6 +1,6 @@
 const Library = require("../models/Library");
 
-// ✅ CREATE LIBRARY
+// CREATE LIBRARY
 exports.createLibrary = async (req, res) => {
   const {
     name,
