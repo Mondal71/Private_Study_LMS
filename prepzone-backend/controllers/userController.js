@@ -24,7 +24,10 @@ const sendEmailOTP = async (email, otp, name = "User") => {
     console.error(
       "Mail Error: MAIL_USER or MAIL_PASS environment variables are not set."
     );
-    throw new Error("Mail service credentials missing.");
+    // Throwing a distinct error here helps confirm the environment variable issue
+    throw new Error(
+      "Mail service credentials missing. Check .env or Render secrets."
+    );
   }
 
   try {
@@ -38,9 +41,16 @@ const sendEmailOTP = async (email, otp, name = "User") => {
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent:", info.response);
   } catch (err) {
-    // Log the full nodemailer error for better debugging in the server logs
-    console.error("Mail Sending Failed (Nodemailer Error):", err);
-    throw new Error("Failed to connect to email service or send mail.");
+    // --- CRUCIAL DEBUGGING STEP ---
+    // Log the full error object from Nodemailer, which contains the specific code (e.g., 535-5.7.8 for Auth error)
+    console.error("=================================================");
+    console.error("Mail Sending Failed! Nodemailer Error Object:");
+    console.error(err);
+    console.error("=================================================");
+    // Throwing a generic, descriptive error for the API response
+    throw new Error(
+      "Failed to connect to email service or send mail. See server logs for detailed Nodemailer error."
+    );
   }
 };
 
@@ -79,17 +89,23 @@ exports.sendOTP = async (req, res) => {
       user.isVerified = false;
     }
 
+    // --- STEP 1: Database Save ---
     await user.save();
+    console.log(
+      `[DEBUG] User ${user.email} saved successfully. Proceeding to email.`
+    );
+    // --- END STEP 1 ---
 
-    // Attempt to send email
+    // --- STEP 2: Email Send ---
     await sendEmailOTP(email, otp, name);
+    // --- END STEP 2 ---
 
     return res.status(200).json({ message: "OTP sent to email successfully" });
   } catch (err) {
     // This catch block handles Mongoose errors AND re-thrown email errors
     console.error("OTP Send Endpoint Error:", err.message);
 
-    // If the error is related to the email credentials/connection, it will be caught here.
+    // Return the response with the captured error detail
     return res.status(500).json({
       error: "Failed to process signup or send verification email.",
       detail: err.message,
