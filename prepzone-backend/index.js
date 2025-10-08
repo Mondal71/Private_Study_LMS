@@ -14,15 +14,7 @@ const razorpayRoutes = require("./routes/razorpayRoutes");
 
 const app = express();
 
-// Security and performance headers
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Cache-Control', 'no-store');
-  next();
-});
-app.disable('x-powered-by');
-
-// FIXED: Add deployed frontend domain
+//CORS (first)
 app.use(
   cors({
     origin: [
@@ -36,9 +28,18 @@ app.use(
   })
 );
 
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
+app.disable("x-powered-by");
+
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
+// Routes
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/libraries", libraryRoutes);
@@ -49,15 +50,14 @@ app.get("/", (req, res) => {
   res.send("PrepZone Server Running");
 });
 
+// Error handler
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err.stack);
-  res.setHeader("Access-Control-Allow-Origin", "*");
   res.status(500).json({ error: "Something went wrong on the server" });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
 require("./cronJobs");
+
