@@ -7,12 +7,15 @@ import { Link } from "react-router-dom";
 export default function UserLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     if (!email || !password) {
       return alert("Please enter email and password");
     }
+
+    setLoading(true);
 
     try {
       const res = await API.post("/user/login", { email, password });
@@ -25,6 +28,9 @@ export default function UserLogin() {
       }
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -50,8 +56,12 @@ export default function UserLogin() {
             onChange={(e) => setPassword(e.target.value)}
             className="input w-full mb-6"
           />
-          <button className="btn-primary w-full mb-2" onClick={handleLogin}>
-            Login
+          <button
+            className="btn-primary w-full mb-2"
+            onClick={handleLogin}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Login"}
           </button>
           <Link to="/user/forgot" className="text-blue-500 text-base mt-2">
             Forgot Password?

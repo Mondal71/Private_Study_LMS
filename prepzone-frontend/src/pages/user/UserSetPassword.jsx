@@ -6,6 +6,7 @@ import Navbar from "../../components/Navbar";
 export default function UserSetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const email = localStorage.getItem("tempUserEmail"); 
 
@@ -26,6 +27,8 @@ export default function UserSetPassword() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const res = await API.post("/user/set-password", { email, password }); 
       if (
@@ -38,6 +41,8 @@ export default function UserSetPassword() {
       }
     } catch (err) {
       alert(err.response?.data?.error || "Failed to set password");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,8 +68,12 @@ export default function UserSetPassword() {
             onChange={(e) => setConfirm(e.target.value)}
             className="input w-full mb-6"
           />
-          <button className="btn-primary w-full" onClick={handleSetPassword}>
-            Set Password
+          <button
+            className="btn-primary w-full"
+            onClick={handleSetPassword}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Set Password"}
           </button>
         </div>
       </div>

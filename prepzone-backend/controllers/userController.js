@@ -205,7 +205,7 @@ exports.verifyForgotOTP = async (req, res) => {
     const isExpired = Date.now() - new Date(user.otpCreatedAt).getTime() > 5 * 60 * 1000;
     if (isExpired) return res.status(400).json({ error: "OTP expired" });
 
-    user.isVerified = true; // ✅ optional
+    user.isVerified = true; //  optional
     user.otp = "";
     await user.save();
     res.json({ message: "OTP verified successfully" });

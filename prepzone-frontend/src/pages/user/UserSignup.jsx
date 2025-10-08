@@ -6,12 +6,15 @@ import Navbar from "../../components/Navbar";
 export default function UserSignup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState(""); 
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async () => {
     if (!name || !email) {
       return alert("Please enter name and email");
     }
+
+    setLoading(true);
 
     try {
       const res = await API.post("/user/signup", { name, email }); 
@@ -21,6 +24,8 @@ export default function UserSignup() {
       }
     } catch (err) {
       alert(err.response?.data?.error || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,8 +51,12 @@ export default function UserSignup() {
             onChange={(e) => setEmail(e.target.value)}
             className="input w-full mb-6"
           />
-          <button className="btn-primary w-full" onClick={handleSignup}>
-            Send OTP
+          <button
+            className="btn-primary w-full"
+            onClick={handleSignup}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Send OTP"}
           </button>
         </div>
       </div>

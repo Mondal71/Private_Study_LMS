@@ -5,6 +5,7 @@ import Navbar from "../../components/Navbar";
 
 export default function UserVerifyOTP() {
   const [otp, setOtp] = useState("");
+  const [loading, seLoading] = useState(false);
   const navigate = useNavigate();
   const email = localStorage.getItem("tempUserEmail"); 
 
@@ -13,6 +14,7 @@ export default function UserVerifyOTP() {
   }, []);
 
   const handleVerify = async () => {
+    seLoading(true);
     try {
       const res = await API.post("/user/verify", { email, otp }); 
       console.log("Response:", res.data);
@@ -23,6 +25,8 @@ export default function UserVerifyOTP() {
       }
     } catch (err) {
       alert(err.response?.data?.error || "Invalid OTP");
+    } finally {
+      seLoading(false)
     }
   };
 
@@ -45,8 +49,12 @@ export default function UserVerifyOTP() {
             className="input w-full mb-6 text-center tracking-widest"
             maxLength={6}
           />
-          <button className="btn-primary w-full" onClick={handleVerify}>
-            Verify OTP
+          <button
+            className="btn-primary w-full"
+            onClick={handleVerify}
+            disabled={loading}
+          >
+            {loading? "Loading...":"Verify OTP"}
           </button>
         </div>
       </div>
