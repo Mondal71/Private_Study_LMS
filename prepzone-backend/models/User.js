@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  // The password field is optional initially, which is correct for an OTP-based signup flow.
   password: {
     type: String,
     required: false,
@@ -36,11 +37,11 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Add index for login optimization (removed duplicate)
+// Add index for login optimization
 userSchema.index({ email: 1 });
 
-// Add lean() optimization for read-only queries
-userSchema.set('toJSON', { virtuals: false });
-userSchema.set('toObject', { virtuals: false });
+// Ensure fields like otp/otpCreatedAt are included when converting to JSON/Object
+userSchema.set("toJSON", { virtuals: false });
+userSchema.set("toObject", { virtuals: false });
 
 module.exports = mongoose.model("User", userSchema);

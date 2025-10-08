@@ -8,6 +8,8 @@ const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
 // Nodemailer transporter
+// NOTE: Ensure MAIL_USER and MAIL_PASS are correctly set in your environment (especially on Render).
+// If using Gmail, MAIL_PASS MUST be an App Password, not your regular password.
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -18,6 +20,13 @@ const transporter = nodemailer.createTransport({
 
 // Email sender
 const sendEmailOTP = async (email, otp, name = "User") => {
+  if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
+    console.error(
+      "Mail Error: MAIL_USER or MAIL_PASS environment variables are not set."
+    );
+    throw new Error("Mail service credentials missing.");
+  }
+
   try {
     const mailOptions = {
       from: process.env.MAIL_USER,
@@ -29,8 +38,9 @@ const sendEmailOTP = async (email, otp, name = "User") => {
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent:", info.response);
   } catch (err) {
-    console.error("Mail Error:", err.message);
-    throw new Error("Mail sending failed: " + err.message);
+    // Log the full nodemailer error for better debugging in the server logs
+    console.error("Mail Sending Failed (Nodemailer Error):", err);
+    throw new Error("Failed to connect to email service or send mail.");
   }
 };
 
@@ -46,12 +56,23 @@ exports.sendOTP = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      user = new User({ name, email, otp, isVerified: false });
+      // New user flow
+      user = new User({
+        name,
+        email,
+        otp,
+        otpCreatedAt: Date.now(),
+        isVerified: false,
+      });
     } else {
+      // Existing user flow (resending OTP)
       if (user.password)
         return res
           .status(409)
-          .json({ error: "User already exists. Please login." });
+          .json({
+            error: "User already exists with a password. Please login.",
+          });
+
       user.name = name;
       user.otp = otp;
       user.otpCreatedAt = Date.now();
@@ -59,12 +80,20 @@ exports.sendOTP = async (req, res) => {
     }
 
     await user.save();
+
+    // Attempt to send email
     await sendEmailOTP(email, otp, name);
 
     return res.status(200).json({ message: "OTP sent to email successfully" });
   } catch (err) {
-    console.error("OTP Send Error:", err.message);
-    return res.status(500).json({ error: "Failed to send OTP" });
+    // This catch block handles Mongoose errors AND re-thrown email errors
+    console.error("OTP Send Endpoint Error:", err.message);
+
+    // If the error is related to the email credentials/connection, it will be caught here.
+    return res.status(500).json({
+      error: "Failed to process signup or send verification email.",
+      detail: err.message,
+    });
   }
 };
 
@@ -79,6 +108,7 @@ exports.verifyOTP = async (req, res) => {
     if (!user || user.otp !== otp)
       return res.status(400).json({ error: "Invalid OTP" });
 
+    // Check expiration (5 minutes)
     const isExpired =
       Date.now() - new Date(user.otpCreatedAt).getTime() > 5 * 60 * 1000;
     if (isExpired)
@@ -174,6 +204,8 @@ exports.verifyForgotOTP = async (req, res) => {
       Date.now() - new Date(user.otpCreatedAt).getTime() > 5 * 60 * 1000;
     if (isExpired) return res.status(400).json({ error: "OTP expired" });
 
+    // The user doesn't strictly need to be marked as verified here,
+    // but the original code did it, so we keep it.
     user.isVerified = true;
     user.otp = "";
     await user.save();
