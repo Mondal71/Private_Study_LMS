@@ -1,7 +1,8 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 // OTP generator
 const generateOTP = () =>
@@ -18,39 +19,32 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 // Email sender
 const sendEmailOTP = async (email, otp, name = "User") => {
-  if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
-    console.error(
-      "Mail Error: MAIL_USER or MAIL_PASS environment variables are not set."
-    );
-    // Throwing a distinct error here helps confirm the environment variable issue
-    throw new Error(
-      "Mail service credentials missing. Check .env or Render secrets."
-    );
+  if (!process.env.RESEND_API_KEY) {
+    console.error("Missing RESEND_API_KEY in .env");
+    throw new Error("Email service not configured");
   }
 
   try {
-    const mailOptions = {
-      from: process.env.MAIL_USER,
+    const response = await resend.emails.send({
+      from: "PrepZone <onboarding@resend.dev>",
       to: email,
       subject: "Your PrepZone OTP",
-      text: `Hi ${name}, your OTP for PrepZone verification is: ${otp}`,
-    };
+      html: `<p>Hi <b>${name}</b>,</p>
+             <p>Your OTP for PrepZone verification is:</p>
+             <h2>${otp}</h2>
+             <p>This OTP will expire in 5 minutes.</p>`,
+    });
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.response);
+    console.log("Email sent via Resend:", response);
   } catch (err) {
-    // --- CRUCIAL DEBUGGING STEP ---
-    // Log the full error object from Nodemailer, which contains the specific code (e.g., 535-5.7.8 for Auth error)
     console.error("=================================================");
-    console.error("Mail Sending Failed! Nodemailer Error Object:");
-    console.error(err);
+    console.error("Email sending failed:", err);
     console.error("=================================================");
-    // Throwing a generic, descriptive error for the API response
-    throw new Error(
-      "Failed to connect to email service or send mail. See server logs for detailed Nodemailer error."
-    );
+    throw new Error("Failed to send email using Resend API");
   }
 };
 
