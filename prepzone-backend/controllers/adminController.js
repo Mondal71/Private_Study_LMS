@@ -1,31 +1,43 @@
 const jwt = require("jsonwebtoken");
 const Admin = require("../models/Admin");
 const bcrypt = require("bcrypt");
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
+
 
 // Generate 6-digit OTP
 const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
-// Send OTP to email
-const sendEmailOTP = async (email, otp) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS,
-    },
-  });
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-  const mailOptions = {
-    from: process.env.MAIL_USER,
-    to: email,
-    subject: "Your OTP for Admin Signup",
-    text: `Your OTP is: ${otp}`,
-  };
+// Email sender
+const sendEmailOTP = async (email, otp, name = "User") => {
+  if (!process.env.RESEND_API_KEY) {
+    console.error("Missing RESEND_API_KEY in .env");
+    throw new Error("Email service not configured");
+  }
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const response = await resend.emails.send({
+      from: "PrepZone <onboarding@resend.dev>",
+      to: email,
+      subject: "Your PrepZone OTP",
+      html: `<p>Hi <b>${name}</b>,</p>
+             <p>Your OTP for PrepZone verification is:</p>
+             <h2>${otp}</h2>
+             <p>This OTP will expire in 5 minutes.</p>`,
+    });
+
+    console.log("Email sent via Resend:", response);
+  } catch (err) {
+    console.error("=================================================");
+    console.error("Email sending failed:", err);
+    console.error("=================================================");
+    throw new Error("Failed to send email using Resend API");
+  }
 };
+
 
 // SEND OTP 
 exports.sendOTP = async (req, res) => {
