@@ -11,13 +11,13 @@ const generateOTP = () =>
 // Nodemailer transporter
 // NOTE: Ensure MAIL_USER and MAIL_PASS are correctly set in your environment (especially on Render).
 // If using Gmail, MAIL_PASS MUST be an App Password, not your regular password.
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS, // app password
-  },
-});
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     user: process.env.MAIL_USER,
+//     pass: process.env.MAIL_PASS, // app password
+//   },
+// });
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
