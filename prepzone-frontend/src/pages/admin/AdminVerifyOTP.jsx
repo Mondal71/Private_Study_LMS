@@ -5,10 +5,13 @@ import Navbar from "../../components/Navbar";
 
 export default function AdminVerifyOTP() {
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  
   const email = localStorage.getItem("tempAdminEmail"); 
 
   const handleVerify = async () => {
+    setLoading(true)
     try {
       const res = await API.post("/admin/verify", { email, otp }); 
       if (
@@ -19,6 +22,8 @@ export default function AdminVerifyOTP() {
       }
     } catch (err) {
       alert(err.response?.data?.error || "Invalid OTP");
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -32,7 +37,6 @@ export default function AdminVerifyOTP() {
           </h2>
           <p className="text-sm text-gray-600 mb-4 text-center">
             OTP sent to: <span className="font-medium">{email}</span>{" "}
-            
           </p>
           <input
             type="text"
@@ -42,8 +46,12 @@ export default function AdminVerifyOTP() {
             className="input w-full mb-6 text-center tracking-widest"
             maxLength={6}
           />
-          <button className="btn-primary w-full" onClick={handleVerify}>
-            Verify OTP
+          <button
+            className="btn-primary w-full"
+            onClick={handleVerify}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Verify OTP"}
           </button>
         </div>
       </div>

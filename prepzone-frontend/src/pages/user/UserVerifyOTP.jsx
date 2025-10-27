@@ -5,7 +5,7 @@ import Navbar from "../../components/Navbar";
 
 export default function UserVerifyOTP() {
   const [otp, setOtp] = useState("");
-  const [loading, seLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const email = localStorage.getItem("tempUserEmail"); 
 
@@ -14,7 +14,7 @@ export default function UserVerifyOTP() {
   }, []);
 
   const handleVerify = async () => {
-    seLoading(true);
+    setLoading(true);
     try {
       const res = await API.post("/user/verify", { email, otp }); 
       console.log("Response:", res.data);
@@ -26,7 +26,7 @@ export default function UserVerifyOTP() {
     } catch (err) {
       alert(err.response?.data?.error || "Invalid OTP");
     } finally {
-      seLoading(false)
+      setLoading(false)
     }
   };
 

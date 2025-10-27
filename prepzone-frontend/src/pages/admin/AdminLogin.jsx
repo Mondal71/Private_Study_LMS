@@ -7,9 +7,12 @@ import { Link } from "react-router-dom";
 export default function AdminLogin() {
   const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+    setLoading(true)
     try {
       const res = await API.post("/admin/login", { email, password }); 
 
@@ -22,6 +25,8 @@ export default function AdminLogin() {
       }
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -47,8 +52,12 @@ export default function AdminLogin() {
             onChange={(e) => setPassword(e.target.value)}
             className="input w-full mb-6"
           />
-          <button className="btn-primary w-full mb-2" onClick={handleLogin}>
-            Login
+          <button
+            className="btn-primary w-full mb-2"
+            onClick={handleLogin}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Login"}
           </button>
           <Link to="/admin/forgot" className="text-blue-500 text-base mt-2">
             Forgot Password?
