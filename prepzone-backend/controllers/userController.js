@@ -31,7 +31,7 @@ const sendEmailOTP = async (email, otp, name = "User") => {
   try {
     const response = await resend.emails.send({
       from: "PrepZone <onboarding@resend.dev>",
-      to: email,
+      to: "mondalasp123@gmail.com",
       subject: "Your PrepZone OTP",
       html: `<p>Hi <b>${name}</b>,</p>
              <p>Your OTP for PrepZone verification is:</p>
