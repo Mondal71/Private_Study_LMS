@@ -87,7 +87,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-700 mt-4 pt-4 text-center">
           <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} PrepZone. All rights reserved. | Made with ❤️ for students
+            © {new Date().getFullYear()} PrepZone. All rights reserved. | Made with for students
           </p>
         </div>
       </div>

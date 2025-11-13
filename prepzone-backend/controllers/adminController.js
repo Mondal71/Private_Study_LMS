@@ -11,8 +11,16 @@ const generateOTP = () =>
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+console.log(resend);
+
+
+
 // Email sender
 const sendEmailOTP = async (email, otp, name = "User") => {
+
+  console.log("Sending OTP to email:", email, "for user:", name, "otp:", otp);
+
+
   if (!process.env.RESEND_API_KEY) {
     console.error("Missing RESEND_API_KEY in .env");
     throw new Error("Email service not configured");

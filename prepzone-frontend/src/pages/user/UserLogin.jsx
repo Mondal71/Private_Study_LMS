@@ -40,7 +40,7 @@ export default function UserLogin() {
       <div className="min-h-[80vh] flex items-center justify-center bg-gray-50">
         <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
           <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">
-            User Login
+            Student Login
           </h2>
           <input
             type="email"

@@ -33,7 +33,7 @@ export default function AdminVerifyOTP() {
       <div className="min-h-[80vh] flex items-center justify-center bg-gray-50">
         <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
           <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">
-            Verify OTP (Admin)
+            Verify OTP (Owner)
           </h2>
           <p className="text-sm text-gray-600 mb-4 text-center">
             OTP sent to: <span className="font-medium">{email}</span>{" "}
